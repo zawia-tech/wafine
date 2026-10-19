@@ -1,0 +1,3 @@
+stack/.env
+terraform/oci/terraform.tfvars
+terraform/cloudflare/terraform.tfvars

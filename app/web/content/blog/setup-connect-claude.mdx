@@ -1,0 +1,53 @@
+---
+title: "Setup — Connect Claude to WaFine (MCP + OAuth)"
+description: "Step-by-step: add WaFine as a custom connector in Claude, sign in, allow, and start sending. The OAuth flow keeps your API key out of Claude."
+date: 2026-10-19
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [setup, claude, mcp, oauth]
+draft: true
+stage: educate
+---
+
+## Prerequisites
+
+- A WaFine account with an invited number
+- Your number connected (session exists on the WhatsApp page)
+- Access to your WaFine API origin (e.g., `https://api.example.com`)
+
+## Connect in five steps
+
+1. Open **Claude** → **Settings** → **Connectors**.
+2. Choose **Add custom connector**.
+3. Paste your WaFine connector URL — the `/mcp` address shown on your WhatsApp page (e.g., `https://api.example.com/mcp`). Do not fill the OAuth fields; discovery is automatic.
+4. Choose **Connect**. A WaFine page opens: sign in with your email, review what Claude is asking for (read chats, send messages), then choose **Allow**.
+5. Back in Claude, enable the connector in a conversation and try: *"Summarise my unread WhatsApp chats, in Arabic."*
+
+## What just happened
+
+- WaFine is an OAuth 2.1 authorization server. Claude discovered the metadata, registered as a client (DCR), and got fine-grained, revocable tokens.
+- Your API key was **never shown to Claude**. The connector uses OAuth tokens that authenticate Claude, not your key.
+- The grant is bound to your session. If you delete the session, the grant and its engine key are revoked.
+
+## Control stays with you
+
+- **Send budget is enforced server-side.** Reads never count; sends do. When the budget runs out, send tools return a visible error.
+- **Approval stays on by default.** We recommend you ask Claude to draft and confirm each send yourself. You can restrict the send tools entirely in the connector's permissions.
+- **Revocation is instant.** Remove the app under **Connected apps** on your WhatsApp page, or simply delete the session — every connected app is disconnected at once.
+
+## For Claude Code (terminal)
+
+```bash
+claude mcp add --transport http whatsapp https://api.example.com/mcp
+```
+
+This uses the same OAuth flow. The command opens the browser for consent.
+
+## Troubleshooting
+
+- **"Invalid redirect URI"** — The connector URL must match exactly what is on your WhatsApp page. No trailing slash, no `http` vs `https` mismatch.
+- **"Session not ready"** — The WhatsApp session must be connected (green badge on the WhatsApp page) before the connector works.
+- **"Daily send allowance reached"** — The per-session daily cap (default 300) includes REST sends, MCP sends, and auto-replies. Wait for the UTC day to roll over, or ask an admin to adjust the limit.
+
+---
+
+**Credits:** WaFine, sponsored by Ai4x Academy, built by ZawIA.Tech, open-core on OpenWA.

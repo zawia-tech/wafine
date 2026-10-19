@@ -1,0 +1,57 @@
+---
+title: Introduction
+description: WaFine connecte votre propre numéro WhatsApp à une API REST, un endpoint MCP et des réponses automatiques rythmées.
+---
+
+WaFine est un service hébergé qui transforme un numéro WhatsApp que vous possédez déjà en
+quelque chose utilisable par vos logiciels et votre assistant IA. Vous liez le numéro une
+seule fois en scannant un QR code, puis vous l'appelez depuis vos scripts, vos applications
+ou Claude.
+
+WaFine est open-core et repose sur [OpenWA](https://github.com/rmyndharis/OpenWA), un client
+WhatsApp **non officiel**. Il n'est ni affilié à, autorisé par ni approuvé par WhatsApp ou
+Meta. Lisez [Utiliser WhatsApp](/fr/using-whatsapp) avant de lier un numéro.
+
+## Ce que vous obtenez
+
+- **Une session WhatsApp liée.** Une session par compte, attachée au numéro avec lequel vous
+  avez été invité.
+- **Une API REST.** Envoyez des messages et lisez vos conversations en HTTPS avec une clé API
+  personnelle.
+- **Des clés API que vous contrôlez.** Jusqu'à cinq clés actives, chacune limitée à votre
+  propre session, révocables à tout moment.
+- **Un endpoint MCP.** Laissez Claude, ou n'importe quel client MCP, lire vos conversations
+  et envoyer des messages en votre nom.
+- **Des réponses automatiques rythmées.** Des règles intégrées simples qui répondent à vos
+  contacts connus avec un délai humain.
+
+## Comment ça marche
+
+1. Vous demandez une invitation. L'accès se fait sur invitation seulement tant que le service
+   est en version anticipée.
+2. Vous créez votre compte avec le numéro WhatsApp qui a été invité.
+3. Vous liez ce numéro en scannant un QR code depuis WhatsApp sur votre téléphone.
+4. Vous créez une clé API et commencez à appeler l'API, ou vous connectez Claude.
+
+WaFine fait tourner la session WhatsApp sur son serveur : votre téléphone n'a pas besoin de
+rester allumé pour que l'API fonctionne.
+
+## Où vos données vivent
+
+- Données de compte, clés et enregistrements de messages : une base Postgres dans l'UE
+  (Paris).
+- Fichiers média : stockés en privé dans l'UE et visibles uniquement lorsque vous êtes
+  connecté.
+- La session WhatsApp elle-même : le serveur de WaFine au Maroc.
+
+Consultez la [FAQ](/fr/faq) et la page [Sécurité et vie privée](/fr/security-and-privacy)
+pour plus de détails.
+
+## Prochaines étapes
+
+- [Démarrage rapide](/fr/quickstart) : déjà invité et inscrit ? Premier message en cinq
+  minutes.
+- [Premiers pas](/fr/getting-started) : de l'invitation à votre premier appel API.
+- [Clés API et sessions](/fr/api-keys-and-sessions) : exemples REST.
+- [MCP et Claude](/fr/mcp-and-claude) : ajoutez WaFine comme connecteur Claude.
+- [Auto-hébergement](/fr/self-hosting) : exécutez la pile open-core vous-même.

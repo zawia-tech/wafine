@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Build the BFF image and run it against a mock gateway (local/bff-smoke/compose.yml), then assert:
+#   1. the container turns `healthy` (the image HEALTHCHECK works without curl)
+#   2. /health is 200 and /health/ready is 200 with the right OPENWA_API_KEY
+#   3. with a wrong key the BFF is alive (/health 200) but NOT ready (/health/ready 503)
+# Same script locally and in CI (.github/workflows/app.yml). Needs docker + curl.
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PORT="${BFF_SMOKE_PORT:-4010}"
+export BFF_SMOKE_PORT="$PORT"
+compose() { docker compose -p bff-smoke -f "$ROOT/local/bff-smoke/compose.yml" "$@"; }
+trap 'compose down -v --remove-orphans >/dev/null 2>&1 || true' EXIT
+
+status() { curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$PORT$1" || true; }
+expect() { # expect <label> <path> <code>
+  local got; got="$(status "$2")"
+  if [ "$got" = "$3" ]; then echo "  ok   $1 ($2 → $got)"; else echo "  FAIL $1: $2 → $got, want $3" >&2; compose logs bff >&2 || true; exit 1; fi
+}
+
+echo "1. good key"
+OPENWA_API_KEY=smoke-key compose up -d --build --wait --wait-timeout 120
+expect "BFF alive"  /health 200
+expect "BFF ready"  /health/ready 200
+
+echo "2. wrong key"
+OPENWA_API_KEY=stale-key compose up -d --force-recreate --wait --wait-timeout 120 bff
+expect "BFF alive"            /health 200
+expect "BFF not ready (401)"  /health/ready 503
+
+echo "bff-smoke: ok"

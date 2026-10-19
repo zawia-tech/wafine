@@ -1,0 +1,365 @@
+/*
+ * Tailwind 4 + daisyUI 5. The whole config lives here (there is no tailwind.config.ts any more).
+ *
+ * `source(none)` + the two @source lines keep the class scan to what Tailwind 3 scanned
+ * (src/app and src/components), so no stray utility starts applying.
+ */
+@import 'tailwindcss' source(none);
+@import './daisyui4-compat.css';
+@source '../app';
+@source '../components';
+
+/* No stock themes: only the two WaFine palettes below. */
+@plugin 'daisyui' {
+  themes: false;
+  logs: false;
+}
+
+/*
+ * The two themes are selected with `data-theme` on <html> (src/components/theme-provider.tsx).
+ * `prefersdark` lets daisyUI answer `prefers-color-scheme: dark` before React hydrates.
+ *
+ * Pine + clay + paper: Moroccan/Bouskoura warmth, deliberately not WhatsApp green.
+ * Body text on base-100 is ~14:1, white on primary 7.9:1.
+ *
+ * Shape tokens (daisyUI 4 -> 5): --rounded-btn -> --radius-field (buttons and inputs),
+ * --rounded-badge -> --radius-selector (badges, toggles, checkboxes), --rounded-box ->
+ * --radius-box, --border-btn -> --border. `--depth: 0` and `--noise: 0` keep controls flat,
+ * as they were in daisyUI 4.
+ */
+@plugin 'daisyui/theme' {
+  name: 'wafine-light';
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-primary: #1c5c42;
+  --color-primary-content: #fcfaf6;
+  --color-secondary: #a5562f;
+  --color-secondary-content: #ffffff;
+  --color-accent: #8c6b3f;
+  --color-accent-content: #ffffff;
+  --color-neutral: #2c3a33;
+  --color-neutral-content: #f4efe6;
+  --color-base-100: #fcfaf6;
+  --color-base-200: #f4efe6;
+  --color-base-300: #e3dbcc;
+  --color-base-content: #1a211d;
+  --color-info: #0284c7;
+  --color-info-content: #ffffff;
+  --color-success: #15803d;
+  --color-success-content: #ffffff;
+  --color-warning: #b45309;
+  --color-warning-content: #ffffff;
+  --color-error: #b91c1c;
+  --color-error-content: #ffffff;
+  --radius-selector: 9999px;
+  --radius-field: 9999px;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* Dark counterpart: pine-dark surfaces, sage primary (light on dark). */
+@plugin 'daisyui/theme' {
+  name: 'wafine-dark';
+  default: false;
+  prefersdark: true;
+  /* daisyUI 4 never set color-scheme on these themes, so native widgets (scrollbars,
+     unstyled inputs) stayed light in dark mode. Kept that way for the launch. */
+  color-scheme: light;
+  --color-primary: #6ecfa6;
+  --color-primary-content: #06120d;
+  --color-secondary: #e08a5f;
+  --color-secondary-content: #22110a;
+  --color-accent: #d8a24a;
+  --color-accent-content: #241703;
+  --color-neutral: #1e2a24;
+  --color-neutral-content: #d9e3dc;
+  --color-base-100: #0f1512;
+  --color-base-200: #17201c;
+  --color-base-300: #263129;
+  --color-base-content: #e9f0ea;
+  --color-info: #38bdf8;
+  --color-info-content: #0b1210;
+  --color-success: #4ade80;
+  --color-success-content: #0b1210;
+  --color-warning: #fbbf24;
+  --color-warning-content: #0b1210;
+  --color-error: #f87171;
+  --color-error-content: #0b1210;
+  --radius-selector: 9999px;
+  --radius-field: 9999px;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/*
+ * The white-label contract. `primary` is daisyUI's own role (`--color-primary`, which
+ * applyTheme() in src/lib/white-label.ts overrides per tenant); the surface/text/border
+ * tokens are WaFine's and applyTheme() rewrites them the same way. The `inline` block holds
+ * the tokens that point at other variables, so each utility reads them at the element.
+ */
+@theme {
+  /* Tailwind 3 hex values for the few palette colours the app uses directly; Tailwind 4
+     moved its palette to OKLCH and these shifted visibly (red-600 got more saturated). */
+  --color-red-300: #fca5a5;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-yellow-400: #facc15;
+  --color-gray-200: #e5e7eb;
+
+  --color-text-muted: #5b6560;
+}
+
+@theme inline {
+  /* White-label compatibility aliases follow the active daisyUI theme roles. */
+  --color-surface: var(--color-base-100);
+  --color-surface-alt: var(--color-base-200);
+  --color-border: var(--color-base-300);
+  --color-text: var(--color-base-content);
+  --color-primary-hover: var(--wl-primary-hover-color, #14442f);
+
+  --font-sans: var(--font-family, Inter), system-ui, sans-serif;
+  /* Rounded display face for headings and the wordmark; Arabic falls back per character
+     to Noto Sans Arabic (Fredoka has no arabic subset). */
+  --font-display: var(--font-fredoka), var(--font-noto-arabic), system-ui, sans-serif;
+
+  /* Three-step elevation scale (owner decision 2026-10-18). `rest` is border-only; `raised`
+     is a soft tinted shadow for cards; `floating` is the deeper tinted shadow for overlays
+     and hero layers. Values live in the --elevation-* variables below so white-label
+     tenants can flatten them. `soft`/`lift` are legacy aliases; prefer raised/floating. */
+  --shadow-rest: var(--elevation-rest);
+  --shadow-raised: var(--elevation-raised);
+  --shadow-floating: var(--elevation-floating);
+  --shadow-soft: var(--elevation-raised);
+  --shadow-lift: var(--elevation-floating);
+}
+
+/*
+ * Tailwind 3 compatibility. Tailwind 4's preflight changed the default border colour to
+ * `currentcolor` (3 used gray-200), buttons to `cursor: default`, placeholders to 50% of
+ * the text colour (3 used gray-400) and unstyled form fields to a transparent background
+ * (3 left the browser's white); these keep the old look.
+ */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    opacity: 1;
+    color: #9ca3af;
+  }
+
+  input:not([type='button'], [type='reset'], [type='submit']),
+  select,
+  textarea {
+    background-color: Field;
+  }
+}
+
+:root {
+  --wl-primary-color: #1c5c42;
+  --motion-duration-fast: 120ms;
+  --motion-duration-base: 200ms;
+  --motion-duration-slow: 320ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animation-btn: var(--motion-duration-base);
+  --animation-input: var(--motion-duration-fast);
+  --default-transition-timing-function: var(--motion-ease-standard);
+  /* Noto Sans Arabic (next/font variable) sits behind Inter so Arabic glyphs fall back
+     to it per character — Inter has no arabic subset. */
+  --font-family: var(--font-inter, 'Inter'), var(--font-noto-arabic, 'Noto Sans Arabic'), system-ui, sans-serif;
+  /* Rounded display face (Fredoka) for headings and the wordmark; Arabic falls back
+     per character to Noto Sans Arabic — Fredoka has no arabic subset. */
+  --font-display-stack: var(--font-fredoka, 'Fredoka'), var(--font-noto-arabic, 'Noto Sans Arabic'), system-ui, sans-serif;
+
+  /* Three-step elevation scale. rest = border only (no shadow); raised = soft tinted
+     shadow on cards; floating = deeper tinted shadow on overlays/hero layers. Tinted with
+     pine, never neutral grey, so depth stays warm. App screens (auth/admin) stay at rest. */
+  --elevation-rest: 0 0 #0000;
+  --elevation-raised: 0 1px 2px rgb(26 33 29 / 0.04), 0 12px 32px -16px rgb(28 92 66 / 0.22);
+  --elevation-floating: 0 2px 4px rgb(26 33 29 / 0.06), 0 24px 48px -20px rgb(28 92 66 / 0.3);
+}
+
+/*
+ * White-label overrides.
+ *
+ * applyTheme() (src/lib/white-label.ts) rewrites `--wl-primary-color` and the surface/text
+ * tokens at runtime; it also rewrites the daisyUI role variables (`--color-primary`,
+ * `--color-primary-content`, `--color-base-100`, …) so components follow the tenant. These
+ * blocks carry the per-theme brand colour and hover shade the daisyUI theme cannot express:
+ * `--wl-primary-color` drives the focus ring below and must track the theme, and daisyUI has
+ * no primary-hover role (`primary-hover` utilities read `--wl-primary-hover-color`).
+ */
+:root,
+[data-theme='wafine-light'] {
+  --wl-primary-color: #1c5c42;
+  --wl-primary-hover-color: #14442f;
+}
+
+[data-theme='wafine-dark'] {
+  --wl-primary-color: #6ecfa6;
+  --wl-primary-hover-color: #8fe0bc;
+}
+
+/*
+ * Page background and text come from the daisyUI theme (bg-base-100 / text-base-content on
+ * <body> in app/layout.tsx), so the light/dark switch is a single `data-theme` flip. The
+ * font stays here because it comes from next/font, not from the theme.
+ */
+body {
+  font-family: var(--font-family);
+}
+
+/* The display face is a brand voice, so every heading wears it — including MDX blog
+   titles. Weight and size stay on the existing utilities. */
+h1,
+h2,
+h3,
+h4,
+.card-title,
+hgroup > * {
+  font-family: var(--font-display-stack);
+}
+
+/*
+ * Buttons and badges take the pill radius from the theme (--radius-field 9999px);
+ * multi-line form fields stay softly rounded, a pill textarea reads as a lens.
+ * Unlayered on purpose: it beats daisyUI's layered rule for var(--radius-field) on
+ * .input/.select/.textarea.
+ */
+:is(.input, .select, .textarea) {
+  border-radius: 0.875rem;
+}
+
+/* DaisyUI v5 no longer reads its legacy animation duration variables by itself. */
+.btn {
+  animation-duration: var(--animation-btn);
+  transition-duration: var(--animation-btn);
+  transition-timing-function: var(--motion-ease-standard);
+}
+
+:is(.input, .select, .textarea) {
+  animation-duration: var(--animation-input);
+  transition-duration: var(--animation-input);
+  transition-timing-function: var(--motion-ease-standard);
+}
+
+/*
+ * Keyboard focus. daisyUI styles its own controls (`btn`, `input`, `link`, …) but plain
+ * `<summary>` and anything outside those classes falls back to the browser default, which is
+ * inconsistent across themes. One ring for every focusable element; `:where()` keeps the
+ * selector at zero extra specificity so daisyUI's own focus styles still win.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--wl-primary-color);
+  outline-offset: 2px;
+}
+
+/*
+ * Landing scroll motion. Reveals are pure CSS: an element carrying .reveal fades
+ * up once, driven by the scroll timeline of its own pass through the viewport —
+ * no JavaScript, nothing left unreadable without JS, and nothing missing in
+ * static renders (screenshots, crawlers), because the animation only applies where
+ * the browser also supports animation-timeline. Under prefers-reduced-motion the
+ * whole block is skipped and every section shows as-is.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      /* fill-mode none: outside its scroll range the animation has no effect, so
+         every static render (no-JS, crawlers, full-page captures) shows plain
+         content, and only the pass through the bottom edge actually animates. */
+      animation-name: reveal-in;
+      animation-timing-function: linear;
+      animation-fill-mode: none;
+      animation-timeline: view();
+      /* Start when the top enters, finish a fifth of the way into the pass. */
+      animation-range: entry 0% cover 22%;
+    }
+  }
+
+  /* Hero layered depth (owner decision 2026-10-18): the clip panel and the chat
+     thread drift a few pixels against each other as the page scrolls. Only where
+     the browser exposes scroll-driven timelines; everything else stays static. */
+  @supports (animation-timeline: view()) {
+    .hero-drift {
+      animation-name: hero-drift;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      /* Full view() pass (cover 0% to 100%): the panel is nearly full-height. */
+    }
+
+    .hero-drift-soft {
+      animation-name: hero-drift-soft;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+    }
+  }
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-drift {
+  from {
+    transform: translateY(-14px);
+  }
+  to {
+    transform: translateY(14px);
+  }
+}
+
+@keyframes hero-drift-soft {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: translateY(-8px);
+  }
+}
+
+/* Honour the OS "reduce motion" setting (the FAQ chevron spins, daisyUI buttons animate). */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --animation-btn: 0ms;
+    --animation-input: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important;
+  }
+}

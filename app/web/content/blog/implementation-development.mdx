@@ -1,0 +1,46 @@
+---
+title: "Implementation and Development — Stack, Agents Workflow, Skills Folder"
+description: "The tech stack (Bun, Hono, oRPC, Drizzle, Next.js, Tailwind, Valkey), the agentic workflow (captain, workers, review gate), and the skills/ folder that encodes repeatable procedures."
+date: 2026-10-18
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [implementation, stack, agents, workflow, skills]
+draft: true
+stage: evaluate
+---
+
+## Stack
+
+**BFF (`app/bff/`).** Hono + oRPC + Bun + Drizzle ORM. Hexagonal architecture:
+- Domain layer: ports, entities, value objects, services (EncryptionService, KeyManagementService, BlindIndexService, PacedReplySender, SendBudgetService)
+- Infrastructure: XChaCha20-Poly1305, HMAC blind index, Argon2id KDF, Valkey (BullMQ, noeviction), R2/OCI S3 storage adapter, auth middleware, rate limiter
+- Adapters: Hono app assembly with middleware stack, oRPC procedures, HTTP routes
+
+**Web (`app/web/`).** Next.js 15 (App Router) + Tailwind CSS 4 + daisyUI 5 (themes `wafine-light`, `wafine-dark`). White-labeled via CSS custom properties. i18n via `next-intl` with `[locale]` segment (EN/FR/AR, RTL). Components in `src/components/ui/` (Button, Badge, Card, Field, Alert, SectionHeading). MDX blog via `next-mdx-remote` + gray-matter + zod.
+
+**Infra (`stack/`).** Docker Compose: `openwa-api` (OpenWA engine), `openwa-bff` (BFF), `openwa-redis` (Valkey), `cloudflared` (tunnel). `deploy.sh` is forward-only: records `/opt/wa/.deployed-commit`; rollback requires `ALLOW_ROLLBACK=1`; dirty checkout requires `ALLOW_DIRTY=1`; empty OpenWA submodule refused.
+
+**IaC (`terraform/`).** OCI module (VM, VCN, object storage buckets + lifecycle), Cloudflare module (tunnel, DNS, Access), AWS module (dev workspace, tailnet join workaround). `scripts/tf` wrapper (tofu-first, `TF_BIN` override).
+
+**CI (`.github/workflows/`).** `app.yml`: typecheck + lint + test + build for BFF and web. `nightly-health.yml`: health probes (Supabase, BFF, API). `graft` job: dependency graph (`make graph-check`).
+
+## Agentic workflow
+
+**Captain / workers / review gate.** The captain (human + herdr agent) plans, delegates to workers (OpenCode, Claude, specialized agents), and runs a review gate before merge. CodeRabbit CLI (`cr review --agent --base origin/main`) runs in the worktree; every real defect is fixed. OpenCodeReview (`ocr`) runs from the reviewers workspace before merging.
+
+## Skills folder
+
+`.claude/skills/` encodes repeatable procedures as SKILL.md files (YAML frontmatter + markdown body). Each skill has:
+- `references/` — facts, voice, formats, campaigns, visuals
+- `scripts/` — lint, package, render, check
+- `assets/` — design system copy, logos
+- `templates/` — skeletons for deliverables
+
+**Loaded skills in this repo:**
+- `wafine-marketing` — content and marketing in EN/FR/AR/Darija (voice, verified facts, formats, campaigns, copy linter, card renderer)
+- `supabase-openwa` — Supabase operations for OpenWA
+- `openwa-ops` — OpenWA engine operations
+- `oci-ops` — Oracle Cloud operations
+- `edge-network` — Cloudflare, Tailscale, tunnel operations
+- `agentic-a2a-protocol` / `agentic-herdr-orchestration` / `agentic-ipc-rpc` / `agentic-protocol-landscape` / `agentic-sockets-streaming` — agentic protocol research
+
+**Agent workspace tooling (PR #83, `mo/wafine-agent-tooling`).** `make pack` → `context/wafine-context.md` (repomix, 313k→122k tokens). `make graph`/`graph-check` + CI job (graft). Serena symbol server (`.mcp.json`). rtk wiring (agent instruction files + `.rtk/filters.toml`). `.claude/settings.json` read-only allowlist.

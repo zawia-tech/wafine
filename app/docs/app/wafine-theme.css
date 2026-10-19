@@ -1,0 +1,57 @@
+@theme {
+  --color-fd-background: hsl(42 43% 98%);
+  --color-fd-foreground: hsl(140 12% 12%);
+  --color-fd-muted: hsl(40 39% 93%);
+  --color-fd-muted-foreground: hsl(147 6% 38%);
+  --color-fd-popover: hsl(42 43% 98%);
+  --color-fd-popover-foreground: hsl(140 12% 12%);
+  --color-fd-card: hsl(42 43% 98%);
+  --color-fd-card-foreground: hsl(140 12% 12%);
+  --color-fd-border: hsl(41 28% 85%);
+  --color-fd-primary: hsl(153 53% 24%);
+  --color-fd-primary-foreground: hsl(42 43% 98%);
+  --color-fd-secondary: hsl(40 39% 93%);
+  --color-fd-secondary-foreground: hsl(140 12% 12%);
+  --color-fd-accent: hsl(137 24% 92%);
+  --color-fd-accent-foreground: hsl(153 53% 24%);
+  --color-fd-ring: hsl(153 53% 24%);
+  --font-sans: 'Inter', 'Noto Sans Arabic', system-ui, sans-serif;
+  --font-display: 'Fredoka', 'Noto Sans Arabic', system-ui, sans-serif;
+  --radius: 1.25rem;
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+}
+
+.dark {
+  --color-fd-background: hsl(150 15% 7%);
+  --color-fd-foreground: hsl(120 19% 92%);
+  --color-fd-muted: hsl(150 13% 11%);
+  --color-fd-muted-foreground: hsl(130 10% 68%);
+  --color-fd-popover: hsl(150 13% 9%);
+  --color-fd-popover-foreground: hsl(120 19% 92%);
+  --color-fd-card: hsl(150 13% 9%);
+  --color-fd-card-foreground: hsl(120 19% 92%);
+  --color-fd-border: hsl(135 10% 22%);
+  --color-fd-primary: hsl(150 49% 62%);
+  --color-fd-primary-foreground: hsl(150 15% 7%);
+  --color-fd-secondary: hsl(150 13% 14%);
+  --color-fd-secondary-foreground: hsl(120 19% 92%);
+  --color-fd-accent: hsl(150 13% 17%);
+  --color-fd-accent-foreground: hsl(150 49% 72%);
+  --color-fd-ring: hsl(150 49% 62%);
+}
+
+html {
+  font-family: 'Inter', 'Noto Sans Arabic', system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+[data-navbar] a {
+  font-family: 'Fredoka', 'Noto Sans Arabic', system-ui, sans-serif;
+  font-weight: 600;
+}

@@ -1,0 +1,29 @@
+---
+title: "The Solution — WaFine Today: REST, MCP, Pacing, Casablanca Sessions, Open-Core on OpenWA"
+description: "What WaFine ships today: one REST API, one MCP endpoint, paced auto-replies, your WhatsApp session on our Casablanca VM, open-core on OpenWA."
+date: 2026-10-18
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [solution, product, architecture]
+draft: true
+stage: newsletter
+---
+
+WaFine is a WhatsApp gateway. You link your number by scanning a QR code once from WhatsApp Web. From then on, WaFine owns the session, paces every outbound auto-reply behind a configurable gap and a daily cap, and exposes your number to the rest of your stack through **one REST API and one MCP endpoint**.
+
+That last part matters. The same session answers JSON over REST and tool calls over MCP. Want your agent to read a chat and reply in your voice — with rate limits and no retry storms? That is the product.
+
+## What ships today
+
+**Paced auto-replies.** A small rule engine evaluates incoming messages and sends replies you configure. Every auto-reply goes through one sender with a gap (default 100 s) and counts against a per-session daily cap (default 300). REST and MCP sends are not gap-paced; they are counted against the same daily cap. The pacing reduces ban risk — it does not remove it. No gateway can promise a number never gets banned.
+
+**One REST API, one MCP endpoint.** `POST /wa` for your scripts, `POST /mcp` for Claude and other MCP clients. Both hit the same session. Keys are scoped to one session, shown once, and revocable. You can hold up to 5 active keys per session.
+
+**Claude connector without sharing your key.** WaFine speaks OAuth 2.1. Claude connects as a custom connector, signs in on the web app, approves once, and gets its own grant and engine key. Revoking a WaFine API key does **not** end Claude access — the connector has its own OAuth grant. Disconnect Claude from the WhatsApp page (Connected apps) and its access ends.
+
+**Your session runs on our VM in Casablanca.** The gateway runs on an Oracle Cloud Always Free A1 instance (2 OCPU, 12 GB) in `af-casablanca-1`. The application database lives in Supabase's Paris region (eu-west-3). Your WhatsApp session stays on our own server.
+
+**Open-core, self-hostable.** The engine is OpenWA (MIT). Our repository ships the compose stack, the BFF, and this web app. You can self-host the whole thing, or let us run it for you.
+
+## What is not here yet
+
+A2A, ANP, P2P device sync, and city hubs are **Vision / Planned**, not shipped. Only state as shipped what exists in `main` (check code/docs). The product today is a paced gateway with a clean API surface and an honest risk posture.

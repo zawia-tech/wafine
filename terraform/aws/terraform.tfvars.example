@@ -1,0 +1,36 @@
+# Copy to terraform.tfvars and edit. terraform.tfvars is gitignored.
+#
+# Mirrors terraform/oci/terraform.tfvars.example in spirit: everything with a
+# safe default is omitted, and the values you MUST decide are called out.
+
+# --- Must decide -------------------------------------------------------------
+
+# Region. us-east-1 is the tooling default but is ~100-120 ms from Morocco.
+# For a WhatsApp gateway every round-trip is user-visible: prefer a European
+# region. T4g is available in eu-west-3 (Paris) and eu-south-2 (Spain).
+region = "us-east-1"
+
+# Budget alerts. REQUIRED if budget_alert_usd > 0 (the default). On a
+# credit-based Free plan a runaway resource silently spends the balance and the
+# account closes when it is gone.
+budget_alert_emails = ["REPLACE_WITH_YOUR_EMAIL"]
+
+# --- Instance size -----------------------------------------------------------
+
+# t4g.small (2 GB) is the only FREE-trial T4g size and CANNOT run this stack.
+# t4g.large (8 GB) matches the openwa-api mem_limit. See README.md.
+instance_type = "t4g.large"
+
+# --- Optional ----------------------------------------------------------------
+
+# environment = "staging"
+# name        = "wa-stg-1"
+# boot_volume_gbs = 100
+
+# Break-glass SSH. Leave OFF: SSM Session Manager is the access path and needs
+# no open port and no key. If you must enable it, set both values together.
+# enable_break_glass_ssh = true
+# admin_cidr             = "203.0.113.7/32"
+
+# enable_cloudwatch_agent = true
+# budget_alert_usd        = 75

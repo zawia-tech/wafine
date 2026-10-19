@@ -1,0 +1,30 @@
+name: Task / handoff
+description: A piece of work for the launch or follow-ups
+labels: ["task"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What needs doing
+      description: Context, links to docs/ or related issues.
+    validations:
+      required: true
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Owner
+      options: ["mo", "youssef", "claude"]
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      description: How we know it worked (command output, screenshot, URL).
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety
+      options:
+        - label: No secrets (keys, passwords, tokens, .env or tfvars contents) are pasted in this issue
+          required: true

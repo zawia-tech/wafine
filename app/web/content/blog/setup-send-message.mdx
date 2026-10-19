@@ -1,0 +1,94 @@
+---
+title: "Setup — Send Your First Message (REST API)"
+description: "Mint a per-session key, call the REST API, and see the message land in WhatsApp. The key is shown once, scoped to your session, and counts against your daily send budget."
+date: 2026-10-19
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [setup, rest, api, send]
+draft: true
+stage: educate
+---
+
+## Prerequisites
+
+- A WaFine account with an invited number
+- Your number connected (session exists on the WhatsApp page)
+
+## Mint a key
+
+1. Open your WhatsApp page in the WaFine web app.
+2. Choose **Mint key** — a per-session API key appears once. Copy it now; it is never shown again.
+3. The key is stored as a SHA-256 hash. Only the key itself proves ownership.
+4. You can hold up to 5 active keys per session. Revoke any key in one click.
+
+## Send a message
+
+```bash
+curl -X POST https://api.example.com/wa \
+  -H "Authorization: Bearer YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "+212600000042",
+    "text": "Hello from the WaFine REST API"
+  }'
+```
+
+**Response (success):**
+```json
+{
+  "id": "msg_abc123",
+  "status": "sent",
+  "timestamp": "2026-10-19T14:23:11Z"
+}
+```
+
+**Response (budget exhausted):**
+```json
+{
+  "error": "DAILY_SEND_LIMIT_REACHED",
+  "message": "Daily send allowance of 300 reached for this session",
+  "retryAfter": "2026-10-20T00:00:00Z"
+}
+```
+
+## What the send budget means
+
+- **Default daily cap:** 300 sends per session (UTC day).
+- **Default per-minute cap:** 10 sends.
+- **Auto-replies** go through the paced sender (configurable gap, default 100 s) and count against the same cap.
+- **REST and MCP sends** are not gap-paced; they are counted against the cap.
+- **Reads** (list chats, read messages) never count against the cap.
+- **Refund on engine refusal:** If OpenWA refuses the send (e.g., number not connected), the budget is not charged.
+
+## For scripts and automation
+
+```python
+import os, requests
+
+API_URL = "https://api.example.com"
+KEY = os.environ["WAFINE_API_KEY"]
+
+def send(to: str, text: str):
+    r = requests.post(
+        f"{API_URL}/wa",
+        headers={"Authorization": f"Bearer {KEY}", "Content-Type": "application/json"},
+        json={"to": to, "text": text},
+        timeout=10
+    )
+    r.raise_for_status()
+    return r.json()
+
+# Example
+send("+212600000042", "Hello from Python")
+```
+
+## Common errors
+
+- **401 Unauthorized** — Key is invalid or revoked.
+- **403 Forbidden** — User is disabled, or the key's session does not match the target number.
+- **404 Not Found** — Session not found (number not connected).
+- **429 Too Many Requests** — Per-minute cap hit (default 10/min). Back off and retry.
+- **503 Service Unavailable** — WhatsApp session not ready (connecting, or disconnected).
+
+---
+
+**Credits:** WaFine, sponsored by Ai4x Academy, built by ZawIA.Tech, open-core on OpenWA.

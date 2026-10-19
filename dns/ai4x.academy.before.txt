@@ -1,0 +1,22 @@
+# ai4x.academy from dns1.p02.nsone.net at 2026-10-07T21:05:09Z
+_dmarc.ai4x.academy. | TXT | "v=DMARC1; p=none; rua=mailto:you@ai4x.academy,mailto:rua@dmarc.brevo.com"
+ai4x.academy. | A | 35.157.26.135
+ai4x.academy. | A | 63.176.8.218
+ai4x.academy. | MX | 1 smtp.google.com.
+ai4x.academy. | NS | dns1.p02.nsone.net.
+ai4x.academy. | NS | dns2.p02.nsone.net.
+ai4x.academy. | NS | dns3.p02.nsone.net.
+ai4x.academy. | NS | dns4.p02.nsone.net.
+ai4x.academy. | TXT | "brevo-code:3c710719ab00aca728aa570a5c7e3a2d"
+ai4x.academy. | TXT | "google-site-verification=n1A1v49dWh2cZMBdRNWTdEpQ52nrVcrkUXmmzsJ-mK8"
+ai4x.academy. | TXT | "linkedin-site-verification=9619010f-8b72-4ff0-aedd-4e3ddffbf7fa"
+ai4x.academy. | TXT | "v=spf1 include:_spf.google.com ~all"
+brevo1._domainkey.ai4x.academy. | CNAME | b1.ai4x-academy.dkim.brevo.com.
+brevo2._domainkey.ai4x.academy. | CNAME | b2.ai4x-academy.dkim.brevo.com.
+coaching.ai4x.academy. | A | 35.157.26.135
+coaching.ai4x.academy. | A | 63.176.8.218
+google._domainkey.ai4x.academy. | TXT | "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2qShnSFRhNlJnIEt27AZS+y0K0KE8t+OrSwkWbXAMJ0M1Y+lB0BNDHfyQw7IyFT0ZaqfgvMOoikRXPx8Fd+DLrOqaG8Ng5qmGIXyTKIeQS/U8OaBvr3QiAicIavUgg95DaXGalvr0v9ZOrLcyb0sWEN2ZL9TIAWrNd6x4f+WJbfehvHCF4XzEon2rzivvi8pQ" "GtVEqKH1ASrKSV8g+fN7q7zQ9Fr3i4JY09Qk6QcfUurvmHMTrsrNAEcu76JzXwCKpzQKdKViN0iWz9HINw85g8qf+lmIkAhhPhFIJyee/gkjesTur1xIQB0jZEUo5WdSjAyzYQ80nLhCYK+K+zoSQIDAQAB"
+learn.ai4x.academy. | A | 35.157.26.135
+learn.ai4x.academy. | A | 63.176.8.218
+www.ai4x.academy. | A | 35.157.26.135
+www.ai4x.academy. | A | 63.176.8.218

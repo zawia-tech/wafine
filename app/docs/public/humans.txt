@@ -1,0 +1,6 @@
+/* WaFine — a hosted WhatsApp gateway, open-core on OpenWA */
+
+Project sponsored by Ai4x Academy. Built by ZawIA.Tech. Developed by Mohamed Moughamir (omnizya & open anaffa), supported by the CDIWG (Bouskoura.online) org. Mentored by Youssef Ghalem (YG Consulting). Open-core on OpenWA (open source).
+
+/* SOURCE */
+https://github.com/zawia-tech/wafine

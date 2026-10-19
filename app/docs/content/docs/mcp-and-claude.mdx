@@ -1,0 +1,81 @@
+---
+title: MCP and Claude
+description: Connect Claude, or any MCP client, to your WhatsApp number through WaFine.
+---
+
+WaFine exposes your session as an MCP server, so an assistant such as Claude can read your
+chats and send messages for you. The endpoint is:
+
+```text
+https://api.example.com/mcp
+```
+
+It uses the Streamable HTTP transport. Your WhatsApp session must exist and be connected first.
+
+## Add the Claude connector
+
+This works in Claude on the web, desktop and mobile apps. Claude signs in with OAuth, so you
+do not paste an API key.
+
+1. On a personal Claude plan (Free, Pro or Max), open **Customize**, then **Connectors**.
+   On a Team or Enterprise plan, an owner adds the connector for the organization first;
+   see Claude's connector settings for that flow.
+2. Choose **Add**, then **Add custom connector**.
+3. Enter the URL `https://api.example.com/mcp` and leave the OAuth fields empty; Claude
+   detects the sign-in flow itself.
+4. Add the connector and use it in a conversation: click the **+** button in the chat,
+   choose **Connectors**, and turn it on.
+5. Ask, for example, "Summarise my unread WhatsApp chats." A WaFine page opens the first
+   time: sign in, review the request, choose **Allow**.
+
+To disconnect, remove the app under **Connected apps** on the **WhatsApp** page in WaFine,
+or remove the connector in Claude. Deleting your session also disconnects every app.
+
+## Use an API key instead
+
+Clients that cannot sign in with OAuth, such as Claude Code or a custom agent, can send an
+API key in the `X-API-Key` header.
+
+Claude Code:
+
+```bash
+claude mcp add --transport http whatsapp https://api.example.com/mcp \
+  --header "X-API-Key: <your-key>"
+```
+
+A generic MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "whatsapp": {
+      "type": "http",
+      "url": "https://api.example.com/mcp",
+      "headers": { "X-API-Key": "<your-key>" }
+    }
+  }
+}
+```
+
+## Read-only vs send
+
+The WaFine MCP server offers two kinds of tools:
+
+- **Read tools:** list chats, read messages, look up contacts. They never count against
+  your send budget.
+- **Send tools:** send, reply to and forward messages. They count against your session's
+  send budget, like REST sends.
+
+WaFine does not offer a read-only key. To keep an assistant read-only, turn off the send
+tools in your client's tool permissions; in Claude, set them in the connector's settings.
+If you allow sending, keep approval on so you confirm each message before it goes out.
+
+When the send budget is used up, send tools return an error that Claude can show you,
+rather than failing silently.
+
+## Good practice
+
+- Ask the assistant to draft, then approve the send yourself.
+- Do not ask it to message people who do not expect to hear from you.
+- Read [Using WhatsApp](/using-whatsapp) for the ban-risk guidance that applies to
+  every send, whoever makes it.

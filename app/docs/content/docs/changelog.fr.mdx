@@ -1,0 +1,45 @@
+---
+title: Notes de version
+description: Ce qui a changé dans WaFine pendant la version alpha en cours.
+---
+
+WaFine est en **alpha** (v0.1.2-alpha, octobre 2026). Cette page résume les changements
+notables pour les utilisateurs du service hébergé. Attendez-vous à ce que tout ci-dessous
+continue d'évoluer ; données et comptes peuvent être remis à zéro pendant l'alpha.
+
+## Ajouté dans cette version
+
+- **Un site de documentation en trois langues.** Ces pages : anglais (racine), français
+  (`/fr/...`) et arabe (`/ar/...`), avec un tutoriel complet et une vidéo en trois
+  langues.
+- **Un tutoriel de bout en bout**, avec une vidéo narrée en anglais, français et arabe :
+  de l'invitation à Claude connecté à votre numéro.
+- **Des réglages de compte.** Profil, e-mail, mot de passe, revue des sessions et demande
+  de fermeture de compte.
+- **Une boîte de messages.** Lisez vos conversations depuis l'application web ; les médias
+  s'ouvrent via un lien privé régénéré à chaque affichage.
+- **L'inscription en français et en arabe**, pas seulement en anglais.
+- **Des outils d'administration** : gestion de la liste d'attente, rôles et permissions,
+  et limites d'envoi par session pour les personnes qui font tourner le service.
+
+## Changé dans cette version
+
+- **Le stockage des médias** est passé à un stockage d'objets privé avec des **liens
+  signés temporaires** — plus aucun fichier média n'a d'URL publique.
+- **Le connecteur Claude utilise désormais OAuth.** Vous vous connectez via WaFine au lieu
+  de coller une clé API ; retirer l'application coupe la connexion aussitôt.
+- **Un seul quota d'envoi partout.** Les envois REST, les envois de Claude via MCP et les
+  réponses automatiques partagent le même quota par session (jour et minute), avec
+  remboursement quand le moteur refuse un envoi.
+
+## Sécurité dans cette version
+
+- Clés API stockées seulement sous forme de hash, limitées à une session, cinq actives au
+  maximum par compte.
+- Jetons OAuth opaques, stockés hachés, liés à une connexion, avec rotation du refresh.
+- Comptes désactivables par les opérateurs : clés et connecteurs cessent aussitôt.
+- Chiffrement interne durci et limites de débit sur l'inscription, la connexion et chaque
+  route API.
+
+Quand cette page et la réalité divergent, la réalité gagne : dites-nous ce que vous avez
+rencontré et nous corrigerons ce résumé aussi.

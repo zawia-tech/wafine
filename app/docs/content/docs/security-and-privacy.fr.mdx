@@ -1,0 +1,59 @@
+---
+title: Sécurité et vie privée
+description: Ce que WaFine stocke, où cela vit, comment clés et applications sont protégées, et ce qui vous revient.
+---
+
+## Ce que le service hébergé stocke, et où
+
+- **Données de compte, clés API et enregistrements de messages** vivent dans une base
+  Postgres dans l'UE (Paris). Les enregistrements de messages sont ce que WaFine garde
+  pour que vous lisiez vos conversations via l'API et la boîte de messages.
+- **Les fichiers média** (photos, audio, documents de vos conversations) sont archivés en
+  privé dans l'UE. Le compartiment n'a pas d'adresse publique ; vous n'obtenez que des
+  liens temporaires (au plus une heure) sur les fichiers de votre propre session.
+- **La session WhatsApp elle-même** tourne sur le serveur de WaFine au Maroc. C'est
+  l'état de connexion de votre compte et elle n'est jamais copiée dans la base.
+- Votre **téléphone** reste l'appareil principal : rien de ce que WaFine détient ne
+  permet de lire votre WhatsApp sans la session liée.
+
+## Clés et applications connectées
+
+- Une clé API est **affichée une fois** à sa création et stockée **uniquement sous forme
+  de hash** — personne chez WaFine ne peut retrouver sa valeur ensuite. Une clé est limitée
+  à votre session, et vous pouvez la révoquer à tout moment ; la révocation est immédiate.
+- Au plus **cinq clés** actives par compte, une clé continue de fonctionner quand une
+  autre est révoquée, chaque clé est limitée en débit.
+- Quand vous connectez **Claude** (ou un autre client MCP), WaFine utilise OAuth : les
+  jetons d'accès sont opaques pour le client, stockés hachés, et liés à une seule
+  connexion. Retirer l'application sur la page **WhatsApp** la coupe aussitôt.
+- L'envoi est soumis à un **quota quotidien et par minute**, à un rythme pour les réponses
+  automatiques, et chaque envoi REST est limité en débit. Ces limites existent pour ralentir
+  les scripts comme un humain va lentement — voir [Utiliser WhatsApp](/fr/using-whatsapp).
+
+## Accès et partage
+
+- L'inscription est **sur invitation** : seul un numéro WhatsApp allowlisté peut être
+  enregistré, et ce numéro est lié au compte.
+- Vos conversations et messages ne sont visibles que par votre propre clé et votre session
+  connectée. Il n'y a pas d'annuaire d'utilisateurs, pas de liens média publics, et
+  l'interface d'administration appartient aux opérateurs du service.
+- Le moteur WhatsApp et la base ne sont pas joignables depuis l'Internet public ; la couche
+  API publique est le seul composant exposé. Tout le trafic passe en HTTPS.
+
+## Ce qui n'est ni privé ni sûr, dit franchement
+
+- WaFine fait tourner un client WhatsApp **non officiel** : les messages qu'il envoie ou
+  lit transitent comme un appareil WhatsApp Web, pas chiffrés de bout en bout d'une façon
+  que vous contrôlez.
+- Les opérateurs du service hébergé administrent les serveurs, donc ils peuvent accéder
+  aux données côté serveur comme les enregistrements de messages. Ne faites pas passer par
+  WaFine ce que vous ne voudriez pas qu'un administrateur, ou WhatsApp, lise.
+- Le service est en **alpha** (v0.1.2-alpha). Attendez-vous à des corrections, des
+  remises à zéro et des limites ; gardez vos propres sauvegardes de ce qui compte et ne
+  reliez jamais un numéro que vous ne pouvez pas perdre.
+
+## Si une clé fuite
+
+Révoquez-la sur la page **WhatsApp** — tout de suite, vous-même, avant d'écrire à qui que
+ce soit. Créez ensuite une clé neuve et mettez à jour vos scripts. Voir
+[Diagnostic](/fr/troubleshooting) pour les erreurs d'une clé morte.

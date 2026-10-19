@@ -1,0 +1,25 @@
+{
+  "name": "wafine-tutorial-video",
+  "private": true,
+  "version": "1.0.0",
+  "description": "WaFine tutorial video, built with Remotion",
+  "scripts": {
+    "studio": "remotion studio",
+    "audio": "bash scripts/make-audio.sh",
+    "voice": "bun scripts/voice.ts",
+    "render": "remotion render WaFineTutorial ../app/docs/public/media/wafine-tutorial.mp4 --concurrency=1 --crf=28 --audio-bitrate=96k",
+    "render:en": "remotion render WaFineTutorial-en ../app/docs/public/media/wafine-tutorial-en.mp4 --concurrency=1 --crf=28 --audio-bitrate=96k",
+    "render:fr": "remotion render WaFineTutorial-fr ../app/docs/public/media/wafine-tutorial-fr.mp4 --concurrency=1 --crf=28 --audio-bitrate=96k",
+    "render:ar": "remotion render WaFineTutorial-ar ../app/docs/public/media/wafine-tutorial-ar.mp4 --concurrency=1 --crf=28 --audio-bitrate=96k",
+    "render:all": "bun run render:en && bun run render:fr && bun run render:ar && cp ../app/docs/public/media/wafine-tutorial-en.mp4 ../app/docs/public/media/wafine-tutorial.mp4",
+    "poster": "remotion still WaFineTutorial ../app/docs/public/media/wafine-tutorial-poster.png --frame=30",
+    "poster:all": "remotion still WaFineTutorial-en ../app/docs/public/media/wafine-tutorial-en-poster.png --frame=30 && remotion still WaFineTutorial-fr ../app/docs/public/media/wafine-tutorial-fr-poster.png --frame=30 && remotion still WaFineTutorial-ar ../app/docs/public/media/wafine-tutorial-ar-poster.png --frame=30"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.536",
+    "@remotion/google-fonts": "4.0.536",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.536"
+  }
+}

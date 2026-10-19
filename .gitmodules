@@ -1,0 +1,4 @@
+[submodule "OpenWA"]
+	path = OpenWA
+	url = https://github.com/rmyndharis/OpenWA.git
+	ignore = untracked

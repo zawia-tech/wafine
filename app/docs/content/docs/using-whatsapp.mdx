@@ -1,0 +1,64 @@
+---
+title: Using WhatsApp
+description: How linking works, how WaFine paces sends, and how to keep your number safe.
+---
+
+WaFine runs on an unofficial WhatsApp client. WhatsApp can restrict or ban numbers that
+behave like automated or bulk senders. This page explains how to reduce that risk.
+
+## How linking works
+
+WaFine connects to WhatsApp the same way WhatsApp Web does: as a **linked device** on your
+account. Your phone stays the primary device.
+
+- You can see and remove the WaFine device at any time under **Linked devices** on your phone.
+- Removing it, or deleting your session in the web app, stops the API and revokes your keys.
+- Messages you send from your phone or WhatsApp Web keep working as usual.
+- Only the number you signed up with can be linked to your account.
+
+## Choose the right number
+
+Use a **dedicated number**, not the personal number you cannot afford to lose.
+
+- Prefer a number that has been in normal use for a while: real conversations, saved
+  contacts, a profile name and photo. A brand-new number that starts sending at once looks
+  like spam.
+- Warm a new number up gradually. Chat normally for a few days before you automate anything.
+- Keep the phone with that SIM working, so you can recover the account if needed.
+
+## Pacing and send limits
+
+WaFine limits how fast your session can send through the API, MCP and auto-replies.
+
+- **API send budget.** Each session has a daily and a per-minute cap on sends (by default
+  300 per day and 10 per minute). Over the cap, the REST API answers `429` with
+  `Retry-After`, and MCP tools return an error your assistant can report.
+- **What counts.** Text, media, replies and forwards sent through WaFine count; a bulk send
+  counts once per recipient. Reads, reactions and messages you send from your own phone do not.
+- **Refused sends are refunded.** A REST send the engine rejects does not use your budget.
+  A send made through MCP counts even if the tool call reports an error, so the budget always
+  errs towards fewer sends.
+- **Auto-replies are slower still.** They wait a few seconds, imitate reading and typing,
+  and are dropped rather than queued when limits are hit.
+
+The budget limits volume. It does not judge who you write to, so the rules below are yours to follow.
+
+## Good practice
+
+1. **No cold bulk sends.** Do not message people who have never contacted you or do not
+   expect to hear from you.
+2. **Write to people who opted in.** Customers, colleagues and contacts who asked for updates.
+3. **Keep volumes low and human-like.** Spread messages out; avoid identical text to many chats.
+4. **Make replies easy.** People who reply rarely report you as spam.
+5. **Stop when you see warnings.** If WhatsApp shows a restriction, pause all automation.
+6. **Review what your assistant sends.** If Claude can send, keep approval on for send tools.
+
+## If something goes wrong
+
+- **Session disconnected:** open the **WhatsApp** page and scan a new QR code.
+- **`429` responses:** wait for the `Retry-After` delay; do not retry in a tight loop.
+- **Number restricted by WhatsApp:** stop sending and follow WhatsApp's in-app
+  instructions before you relink the number.
+
+WaFine cannot lift a restriction placed by WhatsApp. The risk of running an unofficial
+client stays with the number owner.

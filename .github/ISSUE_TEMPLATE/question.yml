@@ -1,0 +1,20 @@
+name: Question / decision
+description: Ask something, or request a decision from Youssef
+labels: ["question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options considered (if a decision is needed)
+      description: List them with trade-offs; the observer will add `needs-decision` and notify Youssef.
+  - type: input
+    id: by
+    attributes:
+      label: Needed by
+      placeholder: "e.g. 2026-10-08 08:00 — blocks the launch"

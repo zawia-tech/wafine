@@ -1,0 +1,48 @@
+---
+title: Glossary
+description: The words WaFine uses, from allowlist to send budget.
+---
+
+Terms you meet across these pages, in alphabetical order.
+
+**Allowlist.** The list of contacts an auto-reply may answer. A rule never replies to a
+contact outside your allowlist, nor to groups, media or unknown numbers.
+
+**API key.** A secret token that lets your scripts call the WaFine REST API
+(`owa_...`). It is scoped to your own session, shown once at creation, and stored by
+WaFine only as a hash.
+
+**Chat ID.** How WhatsApp addresses a conversation: the participant's number in
+international format, without `+`, spaces or dots, followed by `@c.us` — for example
+`2126XXXXXXXX@c.us` for the number `+212 6XX XX XX XX`.
+
+**Linked device.** What WaFine is to WhatsApp: the same kind of connection as WhatsApp
+Web. Your phone remains the primary device, and you can remove the WaFine device at any
+time under **Linked devices**.
+
+**MCP.** The Model Context Protocol, a standard way for assistants to talk to tools.
+WaFine exposes your session as an MCP server over Streamable HTTP, so Claude (or any MCP
+client) can read chats and send messages.
+
+**OAuth.** The sign-in flow Claude uses on the MCP endpoint: your browser opens WaFine,
+you sign in and approve, and the client gets tokens instead of holding your API key.
+
+**REST base URL.** The HTTPS root of the API you call with a key and a session ID — the
+base for paths like `/wa/sessions/<session-id>/messages/send-text`.
+
+**Send budget.** The number of messages your session may send through the API per day and
+per minute (by default 300 per day, 10 per minute). Reads never count. Over budget, the
+API answers `429` with a `Retry-After` delay.
+
+**Session.** One connected WhatsApp number. Each WaFine account has exactly one session;
+you link it by QR and relink it when WhatsApp logs it out.
+
+**Session ID.** The identifier of your session, shown on the WhatsApp page; API paths
+carry it.
+
+**Warmed-up number.** A number with real history — conversations, contacts, a profile —
+used normally for days before automation. A fresh number that starts sending at once
+looks like spam to WhatsApp; see [Using WhatsApp](/using-whatsapp).
+
+**Workflows.** WaFine's built-in, paced auto-replies: fixed answers to known contacts, no
+AI, at most two replies per contact per minute. See [Workflows](/workflows).

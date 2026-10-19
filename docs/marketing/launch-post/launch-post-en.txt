@@ -1,0 +1,18 @@
+Imagine a client who messages you on WhatsApp at 11 p.m. to ask for a slot tomorrow. You read it at 8 a.m. The slot is gone.
+
+If your customers write to you on WhatsApp, you cannot answer every message, every hour.
+
+WaFine links your WhatsApp number to a REST API and an MCP endpoint. You link the number by scanning a QR code from WhatsApp Web. Your auto-replies go through one sender, with a configurable gap. API, MCP and auto-reply sends all count against a daily cap per session.
+
+Claude connects over OAuth and never sees your API key. The consent screen shows what it can read and send, through your session only. To disconnect it, use Connected apps on your WhatsApp page: its access ends.
+
+Our limit: pacing lowers the risk of a ban. It does not remove it. No gateway can promise that a number will never be banned. Our rule: only message people who contacted you first.
+
+WaFine is invite-only, built in Morocco, and growing carefully.
+Join the waitlist: [waitlist link, to verify]
+
+WaFine, sponsored by Ai4x Academy, built by ZawIA.Tech, open-core on OpenWA.
+
+WaFine is an independent, unofficial gateway. It is not affiliated with, authorized or endorsed by WhatsApp LLC or Meta Platforms, Inc. WhatsApp is a trademark of WhatsApp LLC. Claude is a trademark of Anthropic, PBC.
+
+#WhatsApp #SME #Morocco

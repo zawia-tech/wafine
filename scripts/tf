@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# IaC wrapper. Keeps .terraform/ OUT of the working tree, and picks the right binary
+# on macOS and Linux.
+#
+# On macOS: Finder drops a "Icon\r" file into every folder under the Desktop — provider
+# directories included — which breaks OpenTofu's provider checksum verification
+# ("cached package does not match"). TF_DATA_DIR moves that state out of the tree.
+# On Linux this workaround is a harmless no-op, but the TF_DATA_DIR indirection is
+# still useful: it keeps .terraform/ out of the repo and shared across worktrees.
+#
+#   scripts/tf oci init | plan | apply | output -raw instance_id
+#   scripts/tf cloudflare apply
+#   scripts/tf aws init | plan | apply
+#   TF_BIN=terraform scripts/tf oci plan        # force a specific binary
+set -euo pipefail
+MOD="${1:?usage: scripts/tf <oci|cloudflare|aws> <tofu args...>}"; shift
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+[ -d "$ROOT/terraform/$MOD" ] || { echo "no module terraform/$MOD" >&2; exit 1; }
+
+. "$ROOT/scripts/lib/os.sh"
+BIN="$(tf_bin)"
+
+export TF_DATA_DIR="$HOME/.cache/infra-tofu/$MOD"
+export TF_PLUGIN_CACHE_DIR="$HOME/.cache/infra-tofu/plugin-cache"
+mkdir -p "$TF_DATA_DIR" "$TF_PLUGIN_CACHE_DIR"
+exec "$BIN" -chdir="$ROOT/terraform/$MOD" "$@"

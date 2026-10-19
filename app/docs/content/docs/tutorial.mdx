@@ -1,0 +1,91 @@
+---
+title: 'Tutorial: first auto-reply in 10 minutes'
+description: From an invite to a paced auto-reply and Claude connected to your number, step by step.
+---
+
+<video src="/media/wafine-tutorial.mp4" poster="/media/wafine-tutorial-poster.png" controls playsInline style={{width:'100%',borderRadius:12}} />
+
+<small>Voices: English, Jenny (Dioco); French, SIWIS French Speech Synthesis Database (CC BY 4.0). Generated with Piper. Music and sound effects are original.</small>
+
+This tutorial walks the whole path once: account, linked number, API key, a test message,
+an auto-reply that answers on its own, and Claude reading your chats. You need a phone with
+WhatsApp, an email address and a terminal with `curl`.
+
+## 1. Request an invite
+
+WaFine is invite-only. Join the waitlist on the WaFine website with your email and the
+WhatsApp number you plan to use. Use a dedicated, warmed-up number, not the personal one you
+cannot afford to lose (see [Using WhatsApp](/using-whatsapp)).
+
+## 2. Sign up
+
+When your invite is approved, open the web app and choose **Sign up**. Enter your email, a
+password and the invited number in international format, for example `+212 6XX XX XX XX`.
+Confirm your email from the link you receive, then sign in.
+
+## 3. Link WhatsApp by QR
+
+1. Open **WhatsApp** in the web app and create your session.
+2. On your phone, open WhatsApp, go to **Linked devices**, choose **Link a device** and scan
+   the QR code.
+3. Wait until the session shows as connected.
+
+Scan with the number you signed up with; any other number is logged out.
+
+## 4. Create an API key
+
+On the **WhatsApp** page, create an API key and copy it at once: it is shown only once.
+The same page shows your **session ID**, the **REST base URL** and the **MCP endpoint**.
+
+## 5. Send a test message
+
+Message yourself or someone who expects it. The chat ID is the number without `+` or spaces,
+followed by `@c.us`.
+
+In every command below, replace `https://api.example.com` with the REST base URL shown in the web app
+(step 4), and `<session-id>` and `<your-key>` with your own values.
+
+```bash
+curl -X POST "https://api.example.com/wa/sessions/<session-id>/messages/send-text" \
+  -H "X-API-Key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"chatId":"2126XXXXXXXX@c.us","text":"Hello from WaFine"}'
+```
+
+A `429` with `Retry-After` means the session's send budget is used up; wait before retrying.
+
+## 6. Turn on a paced auto-reply
+
+1. Open **Workflows** in the web app. All rules start off.
+2. Switch on **Ping**.
+3. From a contact on your allowlist, send `ping` to your number.
+
+A few seconds later, after a short reading and typing delay, WaFine answers `pong`. Switch on
+**Greeting** too if you want a polite first answer to `hello`, `salam` or `bonjour`, at most
+once per contact per day. Auto-replies never answer groups, media or unknown contacts. See
+[Workflows](/workflows) for the pacing rules.
+
+## 7. Connect Claude via MCP
+
+1. On a personal Claude plan, open **Customize**, then **Connectors**, and choose
+   **Add custom connector**. (Team and Enterprise plans: an owner adds the connector
+   first — see Claude's connector settings.)
+2. Enter your MCP endpoint from the web app (it looks like `https://api.example.com/mcp`) and leave the OAuth fields empty.
+3. Add the connector. A WaFine page opens the first time you use it: sign in to WaFine and choose **Allow**.
+4. In a conversation, click the **+** button, choose **Connectors**, turn the connector on
+   and ask: "Summarise my unread WhatsApp chats."
+
+Claude Code uses your API key instead:
+
+```bash
+claude mcp add --transport http whatsapp https://api.example.com/mcp \
+  --header "X-API-Key: <your-key>"
+```
+
+Keep approval on for send tools, so you confirm each message before it goes out.
+
+## Next steps
+
+- [API keys and sessions](/api-keys-and-sessions): read chats, manage and revoke keys.
+- [MCP and Claude](/mcp-and-claude): read-only setups and good practice.
+- [Using WhatsApp](/using-whatsapp): send limits and how to keep your number safe.

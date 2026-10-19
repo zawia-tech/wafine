@@ -1,0 +1,19 @@
+{
+  "title": "WaFine docs",
+  "pages": [
+    "index",
+    "quickstart",
+    "getting-started",
+    "tutorial",
+    "using-whatsapp",
+    "api-keys-and-sessions",
+    "mcp-and-claude",
+    "workflows",
+    "troubleshooting",
+    "security-and-privacy",
+    "glossary",
+    "changelog",
+    "self-hosting",
+    "faq"
+  ]
+}

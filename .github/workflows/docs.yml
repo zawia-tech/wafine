@@ -1,0 +1,22 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths: ["app/docs/**", "docs/**", ".github/workflows/docs.yml"]
+  pull_request:
+    paths: ["app/docs/**", "docs/**", ".github/workflows/docs.yml"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/docs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run build

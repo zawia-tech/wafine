@@ -1,0 +1,78 @@
+---
+title: Utiliser WhatsApp
+description: Comment fonctionne la liaison, comment WaFine rythme les envois, et comment protéger votre numéro.
+---
+
+WaFine fonctionne sur un client WhatsApp non officiel. WhatsApp peut restreindre ou bannir
+des numéros qui se comportent comme des émetteurs automatisés ou en masse. Cette page
+explique comment limiter ce risque.
+
+## Comment fonctionne la liaison
+
+WaFine se connecte à WhatsApp exactement comme WhatsApp Web : comme un **appareil
+connecté** sur votre compte. Votre téléphone reste l'appareil principal.
+
+- Vous pouvez voir et retirer l'appareil WaFine à tout moment dans **Appareils connectés**
+  sur votre téléphone.
+- Le retirer, ou supprimer votre session dans l'application web, arrête l'API et révoque vos
+  clés.
+- Les messages envoyés depuis votre téléphone ou WhatsApp Web continuent de fonctionner
+  normalement.
+- Seul le numéro avec lequel vous vous êtes inscrit peut être lié à votre compte.
+
+## Choisir le bon numéro
+
+Utilisez un **numéro dédié**, pas le numéro personnel que vous ne pouvez pas perdre.
+
+- Préférez un numéro déjà en usage normal depuis un moment : conversations réelles, contacts
+  enregistrés, nom et photo de profil. Un numéro tout neuf qui commence à envoyer tout de
+  suite ressemble à du spam.
+- Réchauffez un nouveau numéro progressivement. Discutez normalement quelques jours avant
+  d'automatiser quoi que ce soit.
+- Gardez le téléphone avec cette SIM fonctionnel, pour récupérer le compte si nécessaire.
+
+## Rythme et limites d'envoi
+
+WaFine limite la vitesse à laquelle votre session peut envoyer via l'API, MCP et les
+réponses automatiques.
+
+- **Quota d'envoi API.** Chaque session a un plafond journalier et un plafond par minute
+  (par défaut 300 par jour et 10 par minute). Au-delà du plafond, l'API REST répond `429`
+  avec `Retry-After`, et les outils MCP renvoient une erreur que votre assistant peut
+  signaler.
+- **Ce qui compte.** Textes, médias, réponses et transferts envoyés via WaFine comptent ; un
+  envoi en masse compte une fois par destinataire. Les lectures, réactions et messages
+  envoyés depuis votre propre téléphone ne comptent pas.
+- **Les envois refusés sont remboursés.** Un envoi REST que le moteur rejette n'utilise pas
+  votre quota. Un envoi passé par MCP compte même si l'outil signale une erreur, afin que le
+  quota penche toujours vers moins d'envois.
+- **Les réponses automatiques sont encore plus lentes.** Elles attendent quelques secondes,
+  imitent la lecture et la frappe, et sont abandonnées plutôt que mises en file lorsque les
+  limites sont atteintes.
+
+Le quota limite le volume. Il ne juge pas à qui vous écrivez, donc les règles ci-dessous
+vous appartiennent.
+
+## Bonnes pratiques
+
+1. **Pas d'envoi en masse à froid.** N'écrivez pas à des gens qui ne vous ont jamais contacté
+   ou qui n'attendent rien de vous.
+2. **Écrivez aux personnes qui ont accepté.** Clients, collègues et contacts qui ont demandé
+   vos actualités.
+3. **Gardez des volumes faibles et humains.** Répartissez les messages ; évitez le même
+   texte vers de nombreuses conversations.
+4. **Facilitez la réponse.** Les personnes qui répondent vous signalent rarement comme spam.
+5. **Arrêtez tout dès un avertissement.** Si WhatsApp affiche une restriction, mettez en
+   pause toute automatisation.
+6. **Relisez ce que votre assistant envoie.** Si Claude peut envoyer, gardez l'approbation
+   active pour les outils d'envoi.
+
+## En cas de problème
+
+- **Session déconnectée :** ouvrez la page **WhatsApp** et scannez un nouveau QR code.
+- **Réponses `429` :** attendez le délai `Retry-After` ; ne réessayez pas en boucle serrée.
+- **Numéro restreint par WhatsApp :** arrêtez les envois et suivez les instructions
+  WhatsApp dans l'application avant de lier à nouveau le numéro.
+
+WaFine ne peut pas lever une restriction posée par WhatsApp. Le risque lié à un client
+non officiel reste celui du propriétaire du numéro.

@@ -1,0 +1,235 @@
+/*
+ * daisyUI 4 look on daisyUI 5.
+ *
+ * daisyUI 5 changed component metrics and a few colours (smaller buttons and inputs, tighter
+ * card padding, taller badges, a coloured progress track, tab underline only on the active
+ * tab, …). The launch rule is "no visual change from the upgrade", so this file puts back
+ * the daisyUI 4 values for the components this app uses. Each block names what it restores.
+ * Drop a block when the design deliberately moves to the daisyUI 5 default.
+ *
+ * Layering: daisyUI 5 ships inside `@layer utilities { @layer daisyui.l1.l2.l3 { … } }`.
+ * Rules placed directly in `utilities.daisyui` outrank every daisyUI rule (they sit in its
+ * nested l1/l2/l3 layers) but still lose to Tailwind's own utilities, so a `p-6` or `h-11`
+ * on an element keeps winning, as it did before.
+ */
+@layer utilities {
+  @layer daisyui {
+    /* Buttons: 3rem (2rem for btn-sm) tall, 0.875rem text, line-height 1em, 0.5rem gap, a
+       5% drop shadow on filled buttons, and the v4 hover/active fills. */
+    .btn {
+      --size: 3rem;
+      gap: 0.5rem;
+      line-height: 1em;
+      flex-wrap: wrap;
+    }
+    .btn-sm {
+      --size: 2rem;
+      --fontsize: 0.875rem;
+    }
+    .btn:not(.btn-ghost, .btn-outline, .btn-link, :disabled, .btn-disabled) {
+      --btn-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+    /* The daisyUI 4 "pop" when a button appears, and the press-in scale. */
+    @media (prefers-reduced-motion: no-preference) {
+      .btn {
+        animation: button-pop 0.2s ease-out;
+      }
+    }
+    .btn:active:is(:focus, :hover) {
+      animation: button-pop 0s ease-out;
+      transform: scale(0.97);
+    }
+
+    /* Disabled buttons, ghost ones included: neutral at 20%. */
+    .btn:is(.btn-disabled, :disabled, [disabled], [aria-disabled='true']):not(.btn-link) {
+      background-color: color-mix(in oklab, var(--color-neutral) 20%, transparent);
+      border-color: transparent;
+    }
+    .btn-active,
+    .btn:is([aria-pressed='true'], [aria-current]:not([aria-current='false'], [aria-current=''])) {
+      translate: none;
+    }
+    .btn-ghost.btn-active {
+      --btn-bg: color-mix(in oklab, var(--color-base-content) 20%, transparent);
+      --btn-border: transparent;
+    }
+    @media (hover: hover) {
+      .btn:hover {
+        --btn-bg: var(--color-base-300);
+        --btn-border: var(--color-base-300);
+      }
+      .btn:is(.btn-primary, .btn-error, .btn-warning):hover {
+        --btn-bg: color-mix(in oklab, var(--btn-color) 90%, black);
+        --btn-border: color-mix(in oklab, var(--btn-color) 90%, black);
+      }
+      .btn-ghost:hover {
+        --btn-bg: color-mix(in oklab, var(--color-base-content) 20%, transparent);
+        --btn-border: transparent;
+      }
+      .btn-outline:hover {
+        --btn-bg: var(--color-base-content);
+        --btn-border: var(--color-base-content);
+        color: var(--color-base-100);
+      }
+    }
+
+    /* Form fields: 3rem tall, 1rem inline padding; inputs at 1rem text; textareas sit on the
+       baseline like any inline block. */
+    .input {
+      --size: 3rem;
+      padding-inline: 1rem;
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+    /* daisyUI 5 forces email inputs left-to-right; daisyUI 4 let them follow the page, so
+       on /ar the email placeholder sat on the right. (Tel inputs are left-to-right in the
+       browser's own stylesheet either way.) */
+    input.input[type='email']:not([dir]) {
+      direction: inherit;
+    }
+    .input-sm {
+      --size: 2rem;
+      padding-inline: 0.75rem;
+      font-size: 0.875rem;
+      line-height: 2rem;
+    }
+    .select {
+      --size: 3rem;
+      padding-inline: 1rem 2.5rem;
+      font-size: 0.875rem;
+      line-height: 2;
+    }
+    .textarea {
+      vertical-align: baseline;
+      min-height: 3rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      line-height: 2;
+    }
+
+    /* Badges: 1.25rem tall (1rem for badge-sm), no gap. */
+    .badge {
+      --size: 1.25rem;
+      padding-inline: 0.563rem;
+      line-height: 1.25rem;
+      gap: normal;
+    }
+    .badge-sm {
+      --size: 1rem;
+      padding-inline: 0.438rem;
+      font-size: 0.75rem;
+      line-height: 1rem;
+    }
+
+    /* Cards: 2rem body padding, inherited text size, 1.25rem titles. */
+    .card-body {
+      padding: 2rem;
+      font-size: inherit;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+    }
+
+    /* Alerts: stacked and centred on phones, a row from 640px; 1rem padding, inherited text,
+       and a border at 20% of the alert colour. */
+    .alert {
+      grid-auto-flow: row;
+      grid-template-columns: none;
+      justify-content: normal;
+      justify-items: center;
+      align-content: flex-start;
+      text-align: center;
+      padding: 1rem;
+      font-size: inherit;
+      line-height: inherit;
+    }
+    @media (min-width: 640px) {
+      .alert {
+        grid-auto-flow: column;
+        grid-template-columns: auto minmax(auto, 1fr);
+        justify-items: start;
+        text-align: start;
+      }
+    }
+    .alert-error {
+      --alert-border-color: color-mix(in oklab, var(--color-error) 20%, transparent);
+    }
+    .alert-success {
+      --alert-border-color: color-mix(in oklab, var(--color-success) 20%, transparent);
+    }
+    .alert-warning {
+      --alert-border-color: color-mix(in oklab, var(--color-warning) 20%, transparent);
+    }
+
+    /* Progress: the track stays neutral (base-content at 20%) whatever the bar colour. */
+    .progress {
+      background-color: color-mix(in oklab, var(--color-base-content) 20%, transparent);
+    }
+
+    /* Tabs (tabs-border, was tabs-bordered): a grid row whose tabs share the full width, a
+       2px rule under every tab, base-content under the active one, full-strength labels,
+       1rem padding, 2rem tall. */
+    .tabs {
+      display: grid;
+      align-items: end;
+    }
+    .tab {
+      grid-row-start: 1;
+      --tab-p: 1rem;
+      --tab-height: 2rem;
+      font-size: 0.875rem;
+      line-height: 2;
+      color: var(--color-base-content);
+    }
+    .tabs-border > .tab {
+      border-radius: 0;
+      border-bottom: 2px solid color-mix(in oklab, var(--color-base-content) 20%, transparent);
+    }
+    .tabs-border > .tab:is(.tab-active, [aria-selected='true']) {
+      border-bottom-color: var(--color-base-content);
+    }
+    .tabs-border > .tab::before {
+      display: none;
+    }
+
+    /* Tables: collapsed borders, row rules in base-200 (a lone body row keeps its rule),
+       0.75rem bold headers, 1.25rem line height; table-sm body rows at 0.875rem. */
+    .table {
+      border-collapse: collapse;
+      line-height: 1.25rem;
+    }
+    .table :where(thead tr :is(td, th), tbody tr:not(:last-child) :is(td, th)) {
+      border-bottom-color: var(--color-base-200);
+    }
+    .table :where(tbody tr:first-child:last-child :is(td, th)) {
+      border-bottom: var(--border) solid var(--color-base-200);
+    }
+    .table :where(thead) {
+      font-size: 0.75rem;
+      line-height: 1rem;
+      font-weight: 700;
+    }
+    .table-sm :not(thead, tfoot) tr {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+
+    /* Menu items: 0.5rem 1rem padding. */
+    .menu :where(li:not(.menu-title) > :not(ul, menu, details, .menu-title, .btn)) {
+      padding: 0.5rem 1rem;
+    }
+  }
+}
+
+@keyframes button-pop {
+  0% {
+    transform: scale(0.98);
+  }
+  40% {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1);
+  }
+}

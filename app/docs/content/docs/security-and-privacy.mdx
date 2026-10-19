@@ -1,0 +1,57 @@
+---
+title: Security and privacy
+description: What WaFine stores, where it lives, how keys and apps are protected, and what you are responsible for.
+---
+
+## What the hosted service stores, and where
+
+- **Account data, API keys and message records** live in a Postgres database in the EU
+  (Paris). Message records are what WaFine keeps so you can read your chats through the
+  API and the messages inbox.
+- **Media files** (photos, audio, documents from your chats) are archived privately in the
+  EU. The bucket has no public address; you get short-lived links (at most an hour) only
+  for files that belong to your own session.
+- **The WhatsApp session itself** runs on WaFine's server in Morocco. It is login state
+  for your account and is never copied to the database.
+- Your **phone** stays the primary device: nothing WaFine holds lets anyone read your
+  WhatsApp without the linked session.
+
+## Keys and connected apps
+
+- An API key is **shown once** at creation and stored **only as a hash** — nobody at WaFine
+  can recover the value after that. A key is scoped to your own session, and you can revoke
+  it at any time; revocation is immediate.
+- At most **five keys** are active per account, one key keeps working when another is
+  revoked, and keys are rate-limited.
+- When you connect **Claude** (or another MCP client), WaFine uses OAuth: the access tokens
+  are opaque to the client and stored hashed, and they are bound to a single connection.
+  Removing the app on the **WhatsApp** page cuts it off at once.
+- Sending is subject to a **daily and per-minute send budget** with pacing for
+  auto-replies, and every REST send is limited in rate. These limits exist to
+  slow scripts down the way a human is slow — see [Using WhatsApp](/using-whatsapp).
+
+## Access and sharing
+
+- Sign-up is **invite-only**: only an allowlisted WhatsApp number can be registered, and
+  that number is tied to the account.
+- Your chats and messages are visible only to your own key and your signed-in session.
+  There is no shared directory of users, no public media links, and the admin interface
+  belongs to the operators of the service.
+- The WhatsApp engine and the database are not reachable from the public internet; the
+  public API layer is the only exposed component. All traffic is HTTPS.
+
+## What is not private nor safe, said plainly
+
+- WaFine is running an **unofficial** WhatsApp client: messages it sends or reads travel
+  like a WhatsApp Web device, not end-to-end-encrypted in a way you control.
+- Operators of the hosted service administer the servers, so they can access server-side
+  data such as message records. Do not put anything through WaFine you would not want an
+  administrator, or WhatsApp, to read.
+- The service is in **alpha** (v0.1.2-alpha). Expect fixes, resets and limits; keep your
+  own backups of what matters, and never connect a number you cannot afford to lose.
+
+## If a key leaks
+
+Revoke it on the **WhatsApp** page — immediately and yourself, before writing to anyone.
+Then create a fresh key and update your scripts. See [Troubleshooting](/troubleshooting)
+for the errors a dead key produces.

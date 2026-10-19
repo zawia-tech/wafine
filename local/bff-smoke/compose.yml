@@ -1,0 +1,45 @@
+# BFF smoke test: the real app/bff image + a Valkey, against a mock OpenWA gateway.
+# Mirrors the `bff` service in stack/compose.infra.yml (same env, same networking pattern, the
+# image's own HEALTHCHECK). Driven by scripts/bff-smoke; nothing is published off the host's loopback.
+#
+#   OPENWA_API_KEY=smoke-key docker compose -p bff-smoke -f local/bff-smoke/compose.yml up -d --build --wait
+
+services:
+  redis:
+    image: valkey/valkey:8-alpine
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  openwa-api:
+    image: oven/bun:1.4-alpine
+    working_dir: /app
+    command: ['bun', 'run', 'mock-gateway.ts']
+    environment:
+      - MOCK_API_KEY=smoke-key
+    volumes:
+      - ./mock-gateway.ts:/app/mock-gateway.ts:ro
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:2785/api/health']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  bff:
+    build:
+      context: ../../app/bff
+      dockerfile: Dockerfile
+    ports:
+      - '127.0.0.1:${BFF_SMOKE_PORT:-4010}:4000'
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - MCP_READONLY=true
+      - OPENWA_BASE_URL=http://openwa-api:2785
+      - OPENWA_API_KEY=${OPENWA_API_KEY:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+      openwa-api:
+        condition: service_healthy

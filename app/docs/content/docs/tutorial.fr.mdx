@@ -1,0 +1,101 @@
+---
+title: 'Tutoriel : première réponse automatique en 10 minutes'
+description: D'une invitation à une réponse automatique rythmée et à Claude connecté à votre numéro, étape par étape.
+---
+
+<video src="/media/wafine-tutorial-fr.mp4" poster="/media/wafine-tutorial-fr-poster.png" controls playsInline style={{width:'100%',borderRadius:12}} />
+
+<small>Voix : anglais, Jenny (Dioco) ; français, SIWIS French Speech Synthesis Database (CC BY 4.0). Généré avec Piper. Musique et effets sonores originaux.</small>
+
+Ce tutoriel parcourt tout le trajet une fois : compte, numéro lié, clé API, un message de
+test, une réponse automatique qui répond d'elle-même, et Claude qui lit vos conversations.
+Il vous faut un téléphone avec WhatsApp, une adresse e-mail et un terminal avec `curl`.
+
+## 1. Demandez une invitation
+
+WaFine est réservé aux invités. Rejoignez la liste d'attente sur le site WaFine avec votre
+e-mail et le numéro WhatsApp que vous comptez utiliser. Utilisez un numéro dédié éprouvé, pas
+le numéro personnel auquel vous ne pouvez pas renoncer (voir
+[Utiliser WhatsApp](/fr/using-whatsapp)).
+
+## 2. Créez votre compte
+
+Lorsque votre invitation est approuvée, ouvrez l'application web et choisissez **Sign up**
+(inscription). Saisissez votre e-mail, un mot de passe et le numéro invité au format
+international, par exemple `+212 6XX XX XX XX`. Confirmez votre e-mail via le lien reçu, puis
+connectez-vous.
+
+## 3. Liez WhatsApp par QR code
+
+1. Ouvrez **WhatsApp** dans l'application web et créez votre session.
+2. Sur votre téléphone, ouvrez WhatsApp, allez dans **Appareils connectés**, choisissez
+   **Associer un appareil** et scannez le QR code.
+3. Attendez que la session apparaisse comme connectée.
+
+Scannez avec le numéro avec lequel vous vous êtes inscrit ; tout autre numéro est
+déconnecté.
+
+## 4. Créez une clé API
+
+Sur la page **WhatsApp**, créez une clé API et copiez-la aussitôt : elle n'est affichée qu'une
+seule fois. La même page affiche votre **ID de session**, l'**URL de base REST** et le
+**endpoint MCP**.
+
+## 5. Envoyez un message de test
+
+Écrivez à vous-même ou à quelqu'un qui attend le message. L'ID de conversation est le numéro
+sans `+` ni espaces, suivi de `@c.us`.
+
+Dans chaque commande ci-dessous, remplacez `https://api.example.com` par l'URL de base REST
+affichée dans l'application web (étape 4), et `<session-id>` et `<your-key>` par vos propres
+valeurs.
+
+```bash
+curl -X POST "https://api.example.com/wa/sessions/<session-id>/messages/send-text" \
+  -H "X-API-Key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"chatId":"2126XXXXXXXX@c.us","text":"Hello from WaFine"}'
+```
+
+Un `429` avec `Retry-After` signifie que le quota d'envoi de la session est épuisé ; attendez
+avant de réessayer.
+
+## 6. Activez une réponse automatique rythmée
+
+1. Ouvrez **Workflows** dans l'application web. Toutes les règles sont désactivées au départ.
+2. Activez **Ping**.
+3. Depuis un contact de votre liste autorisée, envoyez `ping` à votre numéro.
+
+Quelques secondes plus tard, après un court délai de lecture et de frappe, WaFine répond
+`pong`. Activez aussi **Greeting** (salutation) si vous voulez une première réponse polie à
+`hello`, `salam` ou `bonjour`, au plus une fois par contact et par jour. Les réponses
+automatiques ne répondent jamais aux groupes, aux médias ni aux contacts inconnus. Voir
+[Workflows](/fr/workflows) pour les règles de rythme.
+
+## 7. Connectez Claude via MCP
+
+1. Sur un plan Claude personnel, ouvrez **Customize**, puis **Connectors**, et choisissez
+   **Add custom connector** (plans Team et Enterprise : un Owner ajoute d'abord le
+   connecteur — voyez les réglages de connecteurs de Claude).
+2. Entrez votre endpoint MCP de l'application web (il ressemble à `https://api.example.com/mcp`) et laissez les champs OAuth vides.
+3. Ajoutez le connecteur. Une page WaFine s'ouvre à la première utilisation : connectez-vous à WaFine et choisissez **Allow** (autoriser).
+4. Dans une conversation, cliquez sur le bouton **+**, choisissez **Connectors**, activez le
+   connecteur et demandez : « Résume mes conversations WhatsApp non lues. »
+
+Claude Code utilise votre clé API à la place :
+
+```bash
+claude mcp add --transport http whatsapp https://api.example.com/mcp \
+  --header "X-API-Key: <your-key>"
+```
+
+Gardez l'approbation active pour les outils d'envoi, afin de confirmer chaque message avant
+son envoi.
+
+## Prochaines étapes
+
+- [Clés API et sessions](/fr/api-keys-and-sessions) : lire les conversations, gérer et révoquer
+  les clés.
+- [MCP et Claude](/fr/mcp-and-claude) : configurations en lecture seule et bonnes pratiques.
+- [Utiliser WhatsApp](/fr/using-whatsapp) : limites d'envoi et comment garder votre numéro en
+  sécurité.

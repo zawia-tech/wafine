@@ -1,0 +1,87 @@
+---
+title: MCP et Claude
+description: Connectez Claude, ou n'importe quel client MCP, à votre numéro WhatsApp via WaFine.
+---
+
+WaFine expose votre session comme serveur MCP, pour qu'un assistant tel que Claude puisse
+lire vos conversations et envoyer des messages pour vous. L'endpoint est :
+
+```text
+https://api.example.com/mcp
+```
+
+C'est une URL d'exemple : remplacez l'hôte par le **endpoint MCP** affiché dans l'application web.
+
+Il utilise le transport Streamable HTTP. Votre session WhatsApp doit exister et être
+connectée d'abord.
+
+## Ajouter le connecteur Claude
+
+Cela fonctionne dans Claude sur le web et dans les applications bureau et mobile. Claude se
+connecte avec OAuth, vous ne collez donc pas de clé API.
+
+1. Sur un plan Claude personnel (Free, Pro ou Max), ouvrez **Customize**, puis
+   **Connectors**. Sur un plan Team ou Enterprise, un Owner ajoute d'abord le connecteur
+   pour l'organisation ; voyez les réglages de connecteurs de Claude pour ce cas.
+2. Choisissez **Add**, puis **Add custom connector** (ajouter un connecteur personnalisé).
+3. Saisissez l'URL `https://api.example.com/mcp` et laissez les champs OAuth vides ; Claude
+   détecte lui-même le flux de connexion.
+4. Ajoutez le connecteur puis utilisez-le dans une conversation : cliquez sur le bouton
+   **+** du chat, choisissez **Connectors** et activez-le.
+5. Demandez, par exemple : « Résume mes conversations WhatsApp non lues. » Une page WaFine
+   s'ouvre à la première utilisation : connectez-vous, passez en revue la demande,
+   choisissez **Allow** (autoriser).
+
+Pour déconnecter, retirez l'application sous **Connected apps** (applications connectées) sur
+la page **WhatsApp** de WaFine, ou supprimez le connecteur dans Claude. Supprimer votre
+session déconnecte aussi toute application.
+
+## Utiliser une clé API à la place
+
+Les clients qui ne peuvent pas se connecter avec OAuth, comme Claude Code ou un agent
+personnalisé, peuvent envoyer une clé API dans l'en-tête `X-API-Key`.
+
+Claude Code :
+
+```bash
+claude mcp add --transport http whatsapp https://api.example.com/mcp \
+  --header "X-API-Key: <your-key>"
+```
+
+Une configuration de client MCP générique :
+
+```json
+{
+  "mcpServers": {
+    "whatsapp": {
+      "type": "http",
+      "url": "https://api.example.com/mcp",
+      "headers": { "X-API-Key": "<your-key>" }
+    }
+  }
+}
+```
+
+## Lecture seule ou envoi
+
+Le serveur MCP de WaFine propose deux types d'outils :
+
+- **Outils de lecture :** lister les conversations, lire les messages, chercher des contacts.
+  Ils ne comptent jamais contre votre quota d'envoi.
+- **Outils d'envoi :** envoyer, répondre à et transférer des messages. Ils comptent contre
+  le quota de votre session, comme les envois REST.
+
+WaFine ne propose pas de clé en lecture seule. Pour garder un assistant en lecture seule,
+désactivez les outils d'envoi dans les permissions d'outils de votre client ; dans Claude,
+réglez-les dans les paramètres du connecteur. Si vous autorisez l'envoi, gardez
+l'approbation active pour confirmer chaque message avant son départ.
+
+Quand le quota d'envoi est épuisé, les outils d'envoi renvoient une erreur que Claude peut
+vous montrer, plutôt que d'échouer en silence.
+
+## Bonnes pratiques
+
+- Demandez un brouillon à l'assistant, puis approuvez vous-même l'envoi.
+- Ne le laissez pas écrire à des gens qui n'attendent rien de vous.
+- Lisez [Utiliser WhatsApp](/fr/using-whatsapp) pour les conseils anti-bannissement qui
+  s'appliquent à chaque envoi, quel qu'en soit l'auteur.

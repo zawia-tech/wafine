@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Lint every shell script in the repo. This is the single implementation: the
+# `shell` workflow calls this script, so a green run locally and a green run in
+# CI mean the same thing.
+#
+#   scripts/lint          # check
+#   scripts/lint --fix    # (not supported) exit 2
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+if [ "${1:-}" = --fix ]; then
+  echo "scripts/lint: --fix is not supported; shellcheck findings are fixed by hand" >&2
+  exit 2
+fi
+
+command -v shellcheck >/dev/null 2>&1 || {
+  echo "scripts/lint: shellcheck not found — install it (see scripts/bootstrap.sh)" >&2
+  exit 1
+}
+
+# scripts/ entries are mostly extensionless, so select by shebang, not by *.sh.
+# Use `if`, not `cond && echo`: a bare `&&` returns 1 for every non-matching file,
+# which aborts the whole pipeline under `set -e` / `bash -e` on the last entry.
+mapfile -t files < <(
+  git ls-files -z | while IFS= read -r -d '' f; do
+    if head -1 "$f" 2>/dev/null | grep -qE '^#!.*\b(bash|sh)\b'; then
+      printf '%s\n' "$f"
+    fi
+  done
+)
+
+[ "${#files[@]}" -gt 0 ] || { echo "scripts/lint: no shell scripts found" >&2; exit 1; }
+
+fail=0
+for f in "${files[@]}"; do
+  bash -n "$f" || { echo "syntax: $f" >&2; fail=1; }
+done
+
+echo "shellcheck (${#files[@]} files)"
+shellcheck --severity=warning --external-sources "${files[@]}" || fail=1
+
+[ "$fail" = 0 ] && echo "lint: ok"
+exit "$fail"

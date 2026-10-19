@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk:*)",
+      "Bash(graft:*)",
+      "Bash(bun test:*)",
+      "Bash(make check:*)"
+    ]
+  }
+}

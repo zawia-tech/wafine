@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Render the real VM stack (upstream OpenWA/docker-compose.yml + stack/compose.infra.yml, with
+# stack/.env.example as the env) and assert the BFF wiring that has broken before. Needs the
+# OpenWA submodule checked out, docker compose and jq. No containers are started.
+#   1. the project is valid (e.g. no "depends on undefined service")
+#   2. redis and bff are active services, bff talks to openwa-api over the compose network
+#   3. bff publishes only on 127.0.0.1 (the VM has zero inbound ports)
+#   4. redis uses noeviction (BullMQ jobs must never be evicted)
+#   5. bff has no `curl` healthcheck (the image has no curl; it uses the Dockerfile's wget one)
+#   6. bff forwards the sign-up env (Supabase Auth + DB + admin) and mounts the Supabase CA
+#   7. media leaves Postgres: the engine archives to the object store and prunes, and the bff signs
+#      links with the same bucket, prefix and token (docs/11-media-storage.md)
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+OPENWA_DIR="${OPENWA_DIR:-$ROOT/OpenWA}"   # override to point at any checkout of the pinned upstream tag
+[ -f "$OPENWA_DIR/docker-compose.yml" ] || { echo "stack-check: OpenWA submodule missing (git submodule update --init)" >&2; exit 1; }
+command -v jq >/dev/null || { echo "stack-check: jq not found" >&2; exit 1; }
+
+ENV_FILE="$(mktemp)"
+trap 'rm -f "$ENV_FILE"' EXIT
+cp "$ROOT/stack/.env.example" "$ENV_FILE"
+
+cfg="$(docker compose -p openwa --env-file "$ENV_FILE" \
+  -f "$OPENWA_DIR/docker-compose.yml" -f "$ROOT/stack/compose.infra.yml" config --format json)"
+
+fail=0
+check() { # check <label> <jq filter that must be true>
+  if jq -e "$2" <<<"$cfg" >/dev/null; then echo "  ok   $1"; else echo "  FAIL $1" >&2; fail=1; fi
+}
+
+check "redis is an active service"            '.services.redis.image != null'
+check "bff is an active service"              '.services.bff.image != null'
+check "bff depends on redis + openwa-api"     '(.services.bff.depends_on | keys) == ["openwa-api","redis"]'
+check "bff reaches the gateway locally"       '.services.bff.environment.OPENWA_BASE_URL == "http://openwa-api:2785"'
+check "bff forwards the sign-up env"          '. as $root | ["SUPABASE_URL","SUPABASE_ANON_KEY","SUPABASE_SERVICE_ROLE_KEY","DATABASE_URL","ADMIN_EMAILS","ALLOWLIST_SEED"] | all(. as $k | ($root.services.bff.environment | has($k)))'
+check "bff mounts the Supabase CA"            '[.services.bff.volumes[]? | .target] | index("/run/certs/supabase-ca.crt") != null'
+check "bff pins Supabase TLS by default"      '.services.bff.environment.DATABASE_CA_FILE == "/run/certs/supabase-ca.crt"'
+check "bff forwards the OAuth connector env"  '. as $root | ["OAUTH_ENC_KEY","WEB_URL","PUBLIC_API_URL"] | all(. as $k | ($root.services.bff.environment | has($k)))'
+check "bff publishes only on 127.0.0.1"       '[.services.bff.ports[]?.host_ip] | all(. == "127.0.0.1")'
+check "redis eviction is noeviction"          '(.services.redis.command | tostring | contains("noeviction"))'
+check "bff has no curl healthcheck override"  '(.services.bff.healthcheck // {} | tostring | contains("curl")) | not'
+check "bff + redis share openwa-network"      '[.services.bff.networks, .services.redis.networks] | all(has("openwa-network"))'
+check "engine archives media to object storage" '.services["openwa-api"].environment | .STORAGE_TYPE == "s3" and .CHAT_MEDIA_ARCHIVE_ENABLED == "true" and .CHAT_MEDIA_ARCHIVE_OUTBOUND == "true" and (.S3_ENDPOINT | startswith("https://"))'
+check "engine never inlines more than it archives" '.services["openwa-api"].environment | .MEDIA_DOWNLOAD_MAX_BYTES == .CHAT_MEDIA_ARCHIVE_MAX_BYTES'
+check "engine keeps all data (no pruning)"     '.services["openwa-api"].environment | .MESSAGE_RETENTION_DAYS == "0" and .AUDIT_RETENTION_DAYS == "0" and .CHAT_MEDIA_ARCHIVE_TTL_DAYS == "0"'
+check "bff signs with the engine's bucket"    '.services["openwa-api"].environment as $e | .services.bff.environment | .S3_ENDPOINT == $e.S3_ENDPOINT and .S3_BUCKET_MEDIA == $e.S3_BUCKET and .S3_KEY_PREFIX == $e.S3_KEY_PREFIX and .S3_FORCE_PATH_STYLE == "true" and has("S3_ACCESS_KEY_ID") and has("S3_SECRET_ACCESS_KEY")'
+
+[ "$fail" = 0 ] && echo "stack-check: ok"
+exit "$fail"

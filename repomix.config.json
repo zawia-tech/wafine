@@ -1,0 +1,68 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "context/wafine-context.md",
+    "style": "markdown",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "compress": true,
+    "removeComments": true,
+    "removeEmptyLines": true,
+    "showLineNumbers": false,
+    "instructionFilePath": "repomix-instruction.md",
+    "git": {
+      "sortByChanges": true
+    }
+  },
+  "include": [
+    "app/*/src/**",
+    "docs/*.md",
+    "docs/design-system/**/*.md",
+    "docs/marketing/**/*.md",
+    "skills/**/*.md",
+    "scripts/**",
+    "stack/**",
+    "terraform/**",
+    "*.md",
+    "Makefile"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "OpenWA/**",
+      "**/node_modules/**",
+      "**/bun.lock",
+      "**/bun.lockb",
+      "**/package-lock.json",
+      "**/yarn.lock",
+      "**/pnpm-lock.yaml",
+      "app/*/public/fonts/**",
+      "**/*.{png,jpg,jpeg,gif,webp,avif,svg,ico,woff,woff2,ttf,otf,eot,mp4,webm,zip,tar,gz}",
+      "**/*.{so,o,a,dylib,exe,bin,sqlite,sqlite3,db}",
+      "**/*.test.{ts,tsx,js,jsx,mts,cts}",
+      "**/*.spec.{ts,tsx,js,jsx,mts,cts}",
+      "**/e2e/**",
+      "**/__fixtures__/**",
+      "**/__mocks__/**",
+      "app/bff/drizzle/meta/**",
+      "**/.next/**",
+      "**/dist/**",
+      "docs/*.pdf",
+      "CHANGELOG.md",
+      "stack/certs/**",
+      "terraform/**/.terraform.lock.hcl",
+      "skills/*/references/**",
+      "graft/**",
+      "context/**",
+      "repomix-output*.xml",
+      "repomix-instruction.md"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}

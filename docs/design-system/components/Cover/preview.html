@@ -1,0 +1,28 @@
+<!-- @dsCard height=288 -->
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;height:288px;background:var(--base-100);overflow:hidden}
+.wrap{position:relative;width:960px;height:288px}
+svg{position:absolute;left:480px;top:0}
+.b-primary{fill:var(--primary)} .b-neutral{fill:var(--neutral)} .b-accent{fill:var(--accent)}
+.box{rx:var(--rounded-box)} .pill{fill:var(--primary-content);rx:8px}
+.rule{stroke:var(--base-300);stroke-width:1}
+.txt{position:absolute;left:40px;bottom:36px;max-width:440px}
+h1{margin:0;font:600 120px/.92 var(--font-display);letter-spacing:-.02em;color:var(--base-content)}
+p{margin:16px 0 0;font:400 14px/20px var(--font-sans);color:var(--base-content-muted)}
+</style></head><body><div class="wrap">
+<svg width="480" height="288" viewBox="0 0 480 288" aria-hidden="true">
+<!-- blocks: primary 272x208 slab (rounded-box), neutral 160x248 bleeding right+bottom (rounded-box), accent 96x56 satellite (rounded-box)
+     arrangement: one tall brand slab with an ink slab behind it to the right, a small teal satellite under the seam
+     pattern: literal motif — five message pills leaving at one fixed pitch (space-8), because the brand's promise is "one sender, a configurable gap"
+     scales: pill height space-4 (16px), pill rx 8 = half the short side, pitch space-8 (32px), inset space-8 (32px) -->
+<rect class="b-neutral box" x="320" y="56" width="176" height="248"/>
+<rect class="b-primary box" x="64" y="0" width="288" height="216"/>
+<rect class="b-accent box" x="248" y="232" width="96" height="56"/>
+<rect class="pill" x="96" y="40" width="160" height="16"/>
+<rect class="pill" x="96" y="72" width="112" height="16"/>
+<rect class="pill" x="96" y="104" width="208" height="16"/>
+<rect class="pill" x="96" y="136" width="96" height="16"/>
+<rect class="pill" x="96" y="168" width="144" height="16"/>
+</svg>
+<div class="txt"><h1>WaFine</h1><p>One WhatsApp number, paced and safe, for Claude and your apps.</p></div>
+</div></body></html>

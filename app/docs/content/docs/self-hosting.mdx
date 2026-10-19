@@ -1,0 +1,56 @@
+---
+title: Self-hosting
+description: The open-core components behind WaFine, for teams that want to run their own stack.
+---
+
+WaFine is open-core. The hosted service is the easiest way to use it, but the same building
+blocks can run on your own infrastructure. This page is a high-level overview, not an
+installation guide.
+
+## Components
+
+| Component | Role |
+|---|---|
+| [OpenWA](https://github.com/rmyndharis/OpenWA) | The WhatsApp engine: an unofficial, open-source WhatsApp client that runs linked-device sessions and exposes a REST API and an MCP server. |
+| Backend for frontend (BFF) | The public API layer: sign-up and sign-in, per-user sessions and API keys, the send budget, paced auto-reply workflows, and OAuth for MCP clients such as Claude. |
+| Web app | The dashboard where users link WhatsApp by QR, manage keys and connected apps, and switch workflows on or off. |
+| Postgres | Accounts, keys, session metadata and message records. |
+| S3-compatible object store | Media files and backups, kept private and served through short-lived links. |
+
+## How the pieces fit
+
+```text
+users and agents ──HTTPS──▶ BFF ──▶ OpenWA ──▶ WhatsApp
+                             │         │
+                             ▼         ▼
+                          Postgres   object store
+```
+
+- Only the BFF is exposed to the internet. OpenWA stays on a private network.
+- The BFF holds the engine's admin key and issues each user a key scoped to their own session.
+- WhatsApp session state lives on the engine's own volume. Treat it like a login credential
+  and encrypt its backups.
+
+## What you need
+
+- A Linux host able to run containers.
+- A Postgres database.
+- An S3-compatible bucket for media and backups.
+- A domain for the web app and the API, with TLS.
+- A WhatsApp number that follows the guidance in [Using WhatsApp](/using-whatsapp).
+
+## Things to decide before you start
+
+- **Data location.** Choose where your database, media and engine run, and check what
+  your local data-protection rules say about transfers between them.
+- **Exposure.** Keep the engine private and publish only the BFF.
+- **Send limits.** Keep pacing on and set a conservative send budget for every number.
+
+## Learn more
+
+- [OpenWA on GitHub](https://github.com/rmyndharis/OpenWA): engine documentation,
+  configuration and API reference.
+- [OpenWA releases](https://github.com/rmyndharis/OpenWA/releases): versions and changelog.
+
+Running an unofficial WhatsApp client on your own infrastructure carries the same ban risk
+as the hosted service. You are responsible for the numbers you connect.

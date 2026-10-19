@@ -1,0 +1,47 @@
+---
+title: Introduction
+description: WaFine connects your own WhatsApp number to a REST API, an MCP endpoint and paced auto-replies.
+---
+
+WaFine is a hosted service that turns a WhatsApp number you already own into something your
+software and your AI assistant can use. You link the number once by scanning a QR code, then
+call it from scripts, apps or Claude.
+
+WaFine is open-core and built on [OpenWA](https://github.com/rmyndharis/OpenWA), an
+**unofficial** WhatsApp client. It is not affiliated with, authorized by or endorsed by
+WhatsApp or Meta. Read [Using WhatsApp](/using-whatsapp) before you link a number.
+
+## What you get
+
+- **A linked WhatsApp session.** One session per account, tied to the number you were invited with.
+- **A REST API.** Send messages and read your chats over HTTPS with a personal API key.
+- **API keys you control.** Up to five active keys, each limited to your own session, revocable at any time.
+- **An MCP endpoint.** Let Claude, or any MCP client, read chats and send messages on your behalf.
+- **Paced auto-replies.** Simple built-in rules that answer known contacts with a human-like delay.
+
+## How it works
+
+1. You request an invite. Access is invite-only while the service is in early release.
+2. You sign up with the WhatsApp number that was invited.
+3. You link that number by scanning a QR code from WhatsApp on your phone.
+4. You create an API key and start calling the API, or connect Claude.
+
+WaFine keeps the WhatsApp session running on its server, so your phone does not need to stay
+online for the API to work.
+
+## Where your data lives
+
+- Account data, keys and message records: a Postgres database in the EU (Paris).
+- Media files: stored privately in the EU and shown only to you when you are signed in.
+- The WhatsApp session itself: WaFine's server in Morocco.
+
+See the [FAQ](/faq) for more detail.
+
+## Next steps
+
+- [Quickstart](/quickstart): linked and signed up? First message in five minutes.
+- [Getting started](/getting-started): from invite to your first API call.
+- [API keys and sessions](/api-keys-and-sessions): REST examples.
+- [MCP and Claude](/mcp-and-claude): add WaFine as a Claude connector.
+- [Self-hosting](/self-hosting): run the open-core stack yourself.
+- [Security and privacy](/security-and-privacy): what is stored, and where.

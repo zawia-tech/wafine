@@ -1,0 +1,35 @@
+name: Feature request
+description: Suggest a new feature or enhancement
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: ["OCI VM / network", "OpenWA container", "Supabase DB / storage", "Tailscale", "Cloudflare", "Scripts / IaC", "BFF", "Web", "Docs", "Other"]
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement / user story
+      description: "What problem does this solve? Who benefits?"
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed solution
+      description: "Outline approach, alternatives considered, trade-offs."
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: "- [ ] ... - [ ] ..."
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety
+      options:
+        - label: No secrets (keys, passwords, tokens, .env or tfvars contents) are pasted
+          required: true

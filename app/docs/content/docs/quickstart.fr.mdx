@@ -1,0 +1,42 @@
+---
+title: Démarrage rapide
+description: Déjà invité et inscrit ? Reliez votre numéro, créez une clé et envoyez votre premier message en cinq minutes.
+---
+
+Vous avez votre invitation et un compte (sinon, [Premiers pas](/fr/getting-started) couvre
+l'inscription d'abord). Tout se passe sur la page **WhatsApp** de l'application web, et il
+vous faut un terminal avec `curl`.
+
+## 1. Reliez votre numéro
+
+1. Sur la page **WhatsApp**, créez votre session : un QR code apparaît.
+2. Sur votre téléphone, ouvrez WhatsApp, allez dans **Linked devices** (appareils
+   connectés), choisissez **Link a device** et scannez.
+3. Attendez que la session apparaisse comme connectée. Le numéro que vous scannez doit être
+   celui de l'inscription.
+
+## 2. Créez une clé API
+
+Toujours sur la page **WhatsApp**, créez une clé API et copiez-la tout de suite — elle
+n'est affichée qu'une fois et WaFine n'en garde qu'un hash.
+
+## 3. Envoyez un message
+
+La même page affiche votre **session ID** et l'**URL de base REST**. Remplissez ces deux
+valeurs et le numéro du destinataire (format international sans `+`, suivi de `@c.us`) :
+
+```bash
+curl -X POST "https://api.example.com/wa/sessions/<session-id>/messages/send-text" \
+  -H "X-API-Key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"chatId":"2126XXXXXXXX@c.us","text":"Hello from WaFine"}'
+```
+
+Envoyez à vous-même ou à quelqu'un qui l'attend. Une réponse `429` signifie que le quota
+d'envoi est atteint : attendez le délai `Retry-After` et réessayez.
+
+## Et ensuite
+
+- [Clés API et sessions](/fr/api-keys-and-sessions) : lire les conversations, gérer les clés.
+- [Tutoriel](/fr/tutorial) : une réponse automatique et Claude connecté, de bout en bout.
+- [Diagnostic](/fr/troubleshooting) : quand quelque chose répond une erreur inattendue.

@@ -1,0 +1,83 @@
+---
+title: Clés API et sessions
+description: Créez une clé API, comprenez son périmètre, et envoyez et lisez des messages via REST.
+---
+
+Votre compte WaFine a une seule session WhatsApp. Les clés API permettent à vos scripts et
+applications d'utiliser cette session en HTTPS.
+
+## Sessions
+
+- Chaque compte a **une session**, liée au numéro avec lequel vous vous êtes inscrit.
+- Créez-la et reliez-la par QR si besoin, depuis la page **WhatsApp** de l'application web.
+- **La suppression de la session révoque toutes les clés** qui y sont attachées.
+
+Vous pouvez lister votre session, par exemple pour lire son ID et son statut :
+
+```bash
+curl "https://api.example.com/wa/sessions" -H "X-API-Key: <your-key>"
+```
+
+## Créer une clé
+
+1. Ouvrez la page **WhatsApp** dans l'application web. Votre session doit exister.
+2. Créez une clé API.
+3. Copiez-la aussitôt. WaFine ne l'affiche qu'une fois et n'en conserve qu'un hash.
+
+Vous pouvez avoir au maximum **cinq clés actives**. Révoquez-en une pour en créer une autre.
+Utilisez une clé distincte par application ou machine, pour pouvoir révoquer une clé sans
+casser les autres.
+
+## Périmètre d'une clé
+
+Chaque clé est limitée à **votre propre session** :
+
+- Elle peut lire vos conversations et messages, et envoyer des messages depuis votre numéro.
+- Elle ne peut pas voir les sessions d'autres utilisateurs, modifier les réglages du serveur
+  ou supprimer votre session.
+- Elle est soumise au quota d'envoi de votre session (voir
+  [Utiliser WhatsApp](/fr/using-whatsapp)).
+- Elle est limitée en débit, par défaut à 120 requêtes par minute.
+
+Traitez une clé comme un mot de passe. Tenez-la hors des dépôts de code, des conversations
+et des captures d'écran. Si une clé fuite, révoquez-la depuis la page **WhatsApp**.
+
+## Envoyer un message
+
+Envoyez la clé dans l'en-tête `X-API-Key`. L'ID de conversation est le numéro au format
+international sans `+`, suivi de `@c.us`.
+
+```bash
+curl -X POST "https://api.example.com/wa/sessions/<session-id>/messages/send-text" \
+  -H "X-API-Key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"chatId":"2126XXXXXXXX@c.us","text":"Your order is ready for pickup."}'
+```
+
+Au-delà du quota, l'API répond `429` avec un en-tête `Retry-After`. Attendez avant de
+réessayer.
+
+## Lire les messages
+
+Listez vos conversations :
+
+```bash
+curl "https://api.example.com/wa/sessions/<session-id>/chats" \
+  -H "X-API-Key: <your-key>"
+```
+
+Lisez les derniers messages d'une conversation :
+
+```bash
+curl "https://api.example.com/wa/sessions/<session-id>/messages?chatId=2126XXXXXXXX@c.us&limit=20" \
+  -H "X-API-Key: <your-key>"
+```
+
+Les lectures ne comptent jamais contre votre quota d'envoi. Les médias des messages n'ont
+pas d'URL publique : les fichiers restent dans un compartiment privé et WaFine ne remet à
+votre clé que des liens temporaires (au plus une heure) sur les fichiers de votre propre
+session.
+
+## Révoquer une clé
+
+Ouvrez la page **WhatsApp** et révoquez la clé. Elle cesse de fonctionner immédiatement.

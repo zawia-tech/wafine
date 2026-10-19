@@ -1,0 +1,109 @@
+# Local-only OpenWA stack — NO cloud dependencies.
+#
+# Purpose: exercise OpenWA (and later WAHA) on this workstation until the stack is
+# demonstrably mature, before spending anything on OCI/AWS. Deliberately different
+# from stack/compose.infra.yml in every place that touches a cloud service:
+#
+#   stack/compose.infra.yml (VM)      this file (workstation)
+#   ----------------------------      ----------------------
+#   Supabase Postgres (pooler)   ->   SQLite, zero-config
+#   Cloudflare R2 / S3 storage   ->   local bind mount
+#   cloudflared tunnel           ->   none; 127.0.0.1 only
+#   Tailscale SSH for access     ->   direct docker exec
+#   mem_limit 8g                 ->   2g, because this host is not a VM
+#
+# Run one engine, or both side by side (distinct project name + port + data dir):
+#
+#   OPENWA_ENGINE=whatsapp-web.js API_PORT=2785 \
+#     docker compose -p owa-webjs -f local/docker-compose.local.yml up -d --build
+#
+#   OPENWA_ENGINE=baileys API_PORT=2786 \
+#     docker compose -p owa-baileys -f local/docker-compose.local.yml up -d --build
+#
+# Both at once is the point of the exercise: it is the only way to compare engine
+# behaviour and memory under identical conditions on the same machine.
+
+services:
+  openwa:
+    build:
+      context: ../OpenWA
+      dockerfile: Dockerfile
+    image: openwa-local:${OPENWA_REF:-main}
+    # container_name is intentionally NOT set: with `-p owa-webjs` / `-p owa-baileys`
+    # Compose derives a unique name, so two engines can run at the same time. A fixed
+    # container_name would make the second `up` collide with the first.
+    restart: unless-stopped
+
+    # Same hardening posture as the production image, so local results transfer.
+    security_opt:
+      - 'no-new-privileges:true'
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    read_only: true
+    tmpfs:
+      - /tmp
+
+    # whatsapp-web.js runs a multi-process Chromium per session; Baileys does not.
+    # Measured in the probe, not assumed — see local/probe-memory.sh.
+    mem_limit: ${OPENWA_MEM_LIMIT:-2g}
+    pids_limit: ${OPENWA_PIDS_LIMIT:-2048}
+
+    ports:
+      # Localhost only. Nothing in this file is reachable from the LAN.
+      - '127.0.0.1:${API_PORT:-2785}:2785'
+
+    environment:
+      # ---- the variable under test ----
+      # whatsapp-web.js = Puppeteer/Chromium (default, closer to the real client)
+      # baileys         = websocket, browser-free (far less RAM)
+      - ENGINE_TYPE=${OPENWA_ENGINE:-whatsapp-web.js}
+
+      # ---- local datastore: no Supabase, no TLS, no CA mount ----
+      - DATABASE_TYPE=sqlite
+      - DATABASE_SYNCHRONIZE=true # zero-config schema; the production compose never forces this
+      - DATABASE_SSL=false
+      - STORAGE_TYPE=local
+      - REDIS_ENABLED=false
+      - QUEUE_ENABLED=false
+
+      - NODE_ENV=production
+      - TZ=UTC
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      # Point at itself; there is no tunnel and no public hostname locally.
+      - BASE_URL=http://127.0.0.1:${API_PORT:-2785}
+      - DASHBOARD_URL=http://127.0.0.1:${API_PORT:-2785}
+      - CORS_ORIGINS=http://127.0.0.1:${API_PORT:-2785}
+      # No proxy in front of this, so nothing may be trusted as one.
+      - TRUSTED_PROXIES=
+      # Start linked sessions automatically so a restart does not need a manual click.
+      - AUTO_START_SESSIONS=true
+
+      # ---- secrets ----
+      # ALLOW_DEV_API_KEY is deliberately NOT set. OpenWA refuses to boot in production
+      # with it (assertNoDefaultSecretsInProduction) because it seeds the publicly
+      # documented `dev-admin-key` as an admin credential — and that guard is correct.
+      # Bypassing it locally would mean testing under a security posture the VM never
+      # has. Instead: a real random key, >= 32 chars. See local/gen-env.sh.
+      - API_MASTER_KEY=${API_MASTER_KEY:?run ./local/gen-env.sh and pass --env-file local/.env.local}
+      - API_KEY_PEPPER=${API_KEY_PEPPER:-}
+
+    volumes:
+      # One data dir per engine, so the two runs cannot contaminate each other.
+      - ./data/${OPENWA_ENGINE:-whatsapp-web.js}:/app/data
+
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:2785/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s # the image boots Nest + migrations; Chromium engines are slower

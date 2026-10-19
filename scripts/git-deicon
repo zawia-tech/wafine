@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Removes macOS Finder "Icon\r" files from git ref directories (this repo + the OpenWA submodule).
+# The Desktop folder's custom icon makes Finder drop a 0-byte Icon\r into every folder, including
+# .git/refs/, where git reads it as a broken ref: `git fetch` then dies with "bad object refs/Icon?".
+# Safe: only 0-byte files named exactly Icon\r under refs/ and logs/refs/ are touched.
+#   scripts/git-deicon && git fetch
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+n=0
+for gitdir in "$ROOT/.git" "$(git -C "$ROOT/OpenWA" rev-parse --absolute-git-dir 2>/dev/null || true)"; do
+  [ -d "$gitdir" ] || continue
+  while IFS= read -r -d '' f; do rm -f "$f"; n=$((n+1)); done < <(
+    find "$gitdir/refs" "$gitdir/logs/refs" -name $'Icon\r' -size 0 -print0 2>/dev/null)
+done
+echo "removed $n Finder Icon file(s) from git ref directories"

@@ -1,0 +1,55 @@
+---
+title: Workflows
+description: Paced auto-replies that answer your contacts with a human-like delay.
+---
+
+Workflows are simple automatic replies that run on your session. They answer known
+contacts with fixed text, with no AI involved, and send at a human pace.
+
+## Built-in rules
+
+| Rule | When it replies | Reply | Limit |
+|---|---|---|---|
+| Ping | The message is exactly `ping` | `pong` | none |
+| Greeting | The message is exactly `hello`, `hi`, `salam` or `bonjour` | A short greeting that says a person will get back to you | Once per contact per 24 hours |
+
+Matching ignores case and a trailing `!`, `.`, `,` or `?`. Anything else is left for you to answer.
+
+## Who gets a reply
+
+Workflows reply only to contacts on your allowlist. They never reply to:
+
+- your own messages;
+- groups and status updates;
+- messages that are not text, such as images or voice notes;
+- contacts that are not on your allowlist.
+
+## Turn a rule on or off
+
+All rules start **off**.
+
+1. Open **Workflows** in the web app.
+2. Switch on the rule you want.
+3. Send `ping` from an allowlisted contact to check that it answers.
+
+Switch the rule off the same way to stop it.
+
+## How pacing works
+
+Auto-replies are designed to look like a person typing, not a bot:
+
+1. WaFine waits a short "reading" delay, then a "typing" delay that grows with the reply length.
+2. Replies on one session go out one at a time, a few seconds apart.
+3. Each contact gets at most two auto-replies per minute, and each session at most six.
+4. When a limit is reached, the extra reply is **dropped**, not queued for later.
+5. If WhatsApp or WaFine signals that the session is sending too fast, auto-replies pause
+   for a while. A failed reply is never retried.
+
+Auto-replies also count against your session's send budget.
+
+## Good practice
+
+- Keep the greeting rule for contacts who write to you first; it never starts a conversation.
+- Answer real questions yourself soon after the greeting, as it promises.
+- Do not enable OpenWA's own auto-reply rules on the same number if you self-host:
+  two engines answering the same message look like spam.

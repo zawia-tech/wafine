@@ -1,0 +1,63 @@
+---
+title: How WaFine works with Claude and MCP
+description: "WaFine exposes your WhatsApp session as an MCP server — Claude signs in with OAuth and never sees your API key. Walk through connecting it, and what stays under your control."
+date: 2026-10-21
+author: Mohamed Moughamir
+tags: [guide, mcp, claude]
+draft: false
+---
+
+The question we get most after "why paste a QR code?" is: **how does Claude actually use
+WhatsApp without me handing over my keys?** This post walks through it end to end.
+
+## One endpoint, two ways in
+
+WaFine exposes your session as an MCP server — Streamable HTTP, at the `/mcp` path of your
+WaFine API origin. Once your number is connected, tools can list your chats, read messages,
+and send or reply — the same send budget REST calls are charged against.
+
+There are two ways to authenticate an MCP client, for two kinds of users:
+
+- **OAuth, for Claude.** Claude cannot send custom headers, so WaFine is also an OAuth 2.1
+  authorization server. Claude discovers the metadata itself, registers as a client, and gets
+  fine-grained, revocable tokens. Your API key is never shown to Claude.
+- **`X-API-Key`, for everything else.** Claude Code, custom agents and scripts send your
+  per-session key in a header. One key, scoped to exactly one session, revocable in one click.
+
+## Connecting Claude in five steps
+
+1. In Claude, open **Settings**, then **Connectors**.
+2. Choose **Add custom connector**.
+3. Paste your WaFine connector URL — the `/mcp` address shown on your WaFine WhatsApp page
+   and in the docs. Do not fill the OAuth fields; discovery is automatic.
+4. Choose **Connect**. A WaFine page opens: sign in, review what Claude is asking for, then
+   choose **Allow**.
+5. Back in Claude, enable the connector in a conversation and try: *"Summarise my unread
+   WhatsApp chats, in Arabic."*
+
+## What is yours to control
+
+- **The send budget is enforced server-side.** Reads never count; sends do. When the budget
+  runs out, send tools return a visible error instead of silently failing — Claude shows it
+  to you.
+- **Approval stays on by default.** We recommend you ask Claude to draft and confirm each
+  send yourself. You can restrict the send tools entirely in the connector's permissions;
+  there is no read-only key, so that is how you keep an assistant read-only.
+- **Revocation is instant.** Remove the app under **Connected apps** on your WhatsApp page,
+  or simply delete the session — every connected app is disconnected at once.
+- **Key hygiene is built in.** REST keys are shown once and stored hashed; OAuth tokens
+  rotate; a disabled user gets a clean 403 everywhere, keys and connectors included.
+
+## The unwritten rule
+
+The gateway can reach your contacts, so the last mile is human. Never bulk-message people who
+did not expect to hear from you, and read the ban-risk guidance in the docs before you
+automate a live number. That applies to every send — whether a script or Claude made it.
+
+If you are comfortable enough with the plumbing, `X-API-Key` gets you running in one
+configuration block — the docs show the exact snippet for Claude Code and any generic MCP
+client.
+
+---
+
+WaFine, sponsored by Ai4x Academy, built by ZawIA.Tech, open-core on OpenWA.

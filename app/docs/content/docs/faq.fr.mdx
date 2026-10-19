@@ -1,0 +1,67 @@
+---
+title: FAQ
+description: Réponses courtes sur le client non officiel, vos données, l'accès et les prix.
+---
+
+## WaFine est-il un produit WhatsApp officiel ?
+
+Non. WaFine fonctionne sur [OpenWA](https://github.com/rmyndharis/OpenWA), un client
+WhatsApp non officiel et open-source qui se connecte comme un appareil connecté, comme
+WhatsApp Web. WaFine n'est ni affilié à, autorisé par ni approuvé par WhatsApp ou Meta.
+
+## Quels sont les risques d'un client non officiel ?
+
+WhatsApp peut restreindre ou bannir les numéros qu'il voit comme automatisés ou abusifs.
+WaFine réduit le risque avec les quotas d'envoi, les réponses automatiques rythmées et des
+clés limitées à votre propre session, mais il ne peut pas le supprimer. Utilisez un numéro
+dédié éprouvé et n'envoyez jamais de messages en masse à froid. Voir
+[Utiliser WhatsApp](/fr/using-whatsapp).
+
+## Où vivent mes données ?
+
+- **Données de compte, clés et enregistrements de messages :** une base Postgres dans l'UE
+  (Paris).
+- **Fichiers média :** stockés en privé dans l'UE et visibles uniquement lorsque vous êtes
+  connecté.
+- **La session WhatsApp :** sur le serveur de WaFine au Maroc.
+
+Détails sur [Sécurité et vie privée](/fr/security-and-privacy).
+
+## WaFine stocke-t-il mes clés API ?
+
+Seulement un hash. Une clé est affichée une fois, à sa création. Si vous la perdez, révoquez
+la et créez-en une nouvelle.
+
+## Pourquoi l'inscription est-elle réservée aux invités ?
+
+Pour garder un usage restreint et contrôlé pendant la version anticipée. Demandez une
+invitation depuis le site WaFine. Vous créez ensuite votre compte avec le numéro WhatsApp
+invité, et seul ce numéro peut être lié à votre compte.
+
+## Puis-je utiliser plus d'un numéro ?
+
+Pas encore. Chaque compte a une session WhatsApp, liée au numéro invité.
+
+## Mon téléphone doit-il rester allumé ?
+
+Non. Votre téléphone reste l'appareil principal, mais la session continue de tourner sur le
+serveur de WaFine. Si WhatsApp déconnecte l'appareil lié, scannez un nouveau QR code.
+
+## Claude peut-il envoyer des messages pour moi ?
+
+Oui, si vous l'autorisez. Les outils de lecture et d'envoi sont sur l'endpoint MCP. Vous
+pouvez désactiver les outils d'envoi dans Claude, ou garder l'approbation active pour chaque
+envoi. Voir [MCP et Claude](/fr/mcp-and-claude).
+
+## Quelque chose ne marche pas — par où commencer ?
+
+[Diagnostic](/fr/troubleshooting) couvre les erreurs de l'API, du scan QR et du connecteur
+Claude, avec la signification de chacune.
+
+## Combien coûte WaFine ?
+
+Les prix ne sont pas publics pour l'instant.
+
+## Puis-je faire tourner WaFine moi-même ?
+
+Oui. WaFine est open-core. Voir [Auto-hébergement](/fr/self-hosting) pour les composants.

@@ -1,0 +1,72 @@
+---
+title: Privacy by design, open by default
+description: "Where your WhatsApp data lives, what WaFine stores (and does not), and why the core is open source — the privacy posture behind the product, stated plainly."
+date: 2026-10-22
+author: Mohamed Moughamir
+tags: [privacy, open-source, product]
+draft: false
+---
+
+A gateway that reads your WhatsApp sits close to the most personal inbox you own. Privacy
+was not a feature bolted on for launch — these are the rules the product was designed
+around, stated plainly so you can hold us to them.
+
+## Where your data lives
+
+- **The WhatsApp session stays on a server in Morocco** — our own VM in Casablanca. The
+  session credentials (the linked-device keys WhatsApp Web holds) never leave that machine,
+  and neither does the engine's local database.
+- **Account data, keys and message records live in the EU** — a Postgres database in Paris.
+- **Media files** are stored privately in the EU and shown only to you, when you are signed
+  in — never on a public URL.
+
+Hosting the session in Morocco is deliberate: the data residency you would expect for a
+Moroccan deployment, with a database in a strong-EU jurisdiction one hop away. The
+self-hosting story exists precisely if that arrangement is not yours to make.
+
+## What we store — and what we do not
+
+- **API keys are never stored.** Only a SHA-256 hash. Your key is shown once when you mint
+  it; after that, the only thing that can prove it is the key itself.
+- **Message content is not kept as readable text.** It is stored encrypted — a database dump
+  without your keys gets nobody your conversations.
+- **Claude never sees your API key.** The Claude connector authenticates with OAuth tokens
+  that authenticate Claude, not your key.
+- **No marketing pipeline.** The waitlist sends one message when your invite is ready. We do
+  not sell addresses, and there is no newsletter to forget to unsubscribe from.
+
+## What you can revoke, instantly
+
+Delete the WhatsApp session and every connected app goes with it. Revoke an API key in one
+click. Remove a Claude connector from the Connected apps list. A disabled user gets a clean
+403 everywhere — including the keys and connectors they minted.
+
+## Why the core is open
+
+WaFine is open-core on [OpenWA](https://github.com/rmyndharis/OpenWA): the engine that drives
+the gateway is a public, open-source project — an unofficial WhatsApp client that connects as
+a linked device, like WhatsApp Web. The engine does the protocol work in the open, which
+means:
+
+- **The trust story is verifiable.** Anyone can read how sessions, keys and sends are
+  handled — no "trust our hash" without the recipe.
+- **You can self-host the whole thing.** Our repository ships the compose stack, the BFF and
+  the web app. If you want the session on hardware you own, that path is documented, not
+  hidden behind an enterprise tier.
+- **You are not locked in.** Invites, workflows and keys describe this hosted deployment;
+  the product itself is yours to run.
+
+## The honest part
+
+"Private" does not mean "risk-free": WhatsApp can restrict numbers it sees as automated or
+abusive, regardless of anything we do — the docs give the guidance that reduces that risk
+without pretending to remove it. And an unofficial client is not affiliated with, authorized
+by or endorsed by WhatsApp or Meta; we say that in the footer of every page, because you
+should read it.
+
+Questions about residency, retention or self-hosting are welcome on the waitlist form — you
+will get an answer from a human.
+
+---
+
+WaFine, sponsored by Ai4x Academy, built by ZawIA.Tech, open-core on OpenWA.

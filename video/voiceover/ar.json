@@ -1,0 +1,14 @@
+{
+  "locale": "ar",
+  "note": "Modern Standard Arabic. Native check: Youssef.",
+  "lines": [
+    { "scene": "brand", "text": "تعرّف على WaFine: رقم واتساب الخاص بك، مع زميل ذكي." },
+    { "scene": "invite", "text": "أولًا، اطلب دعوة ببريدك الإلكتروني ورقمك." },
+    { "scene": "qr", "text": "ثم امسح رمز QR في WaFine من واتساب، في الأجهزة المرتبطة." },
+    { "scene": "key", "text": "أنشئ مفتاح API. يظهر مرة واحدة، فاحفظه." },
+    { "scene": "curl", "text": "أرسل رسالتك الأولى بطلب واحد. جرّب أن تراسل نفسك." },
+    { "scene": "replies", "text": "الردود التلقائية تأخذ وقتها، فيبقى رقمك إنسانيًا." },
+    { "scene": "mcp", "text": "وأخيرًا، أضف WaFine إلى Claude كموصل مخصص." },
+    { "scene": "outro", "text": "هذا كل شيء. نراك في قائمة الانتظار." }
+  ]
+}

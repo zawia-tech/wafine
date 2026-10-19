@@ -1,0 +1,124 @@
+name: nightly-health
+
+# Nightly: keeps the free Supabase project awake (pauses after 7 idle days), records a metrics
+# snapshot in ops.health_snapshots, and probes public endpoints. Any failure fails the run, so
+# GitHub's own failure notifications are the alert. Secrets are only passed through env vars and
+# are never echoed. No ${{ }} expression is used inside a `run:` script.
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-health
+  cancel-in-progress: false
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # Targets come from repository variables; unset ones are skipped, never failed.
+      - name: Probe targets
+        id: probe
+        env:
+          HEALTH_URL_WEB: ${{ vars.HEALTH_URL_WEB }}
+          HEALTH_URL_API: ${{ vars.HEALTH_URL_API }}
+          HEALTH_URL_GATEWAY: ${{ vars.HEALTH_URL_GATEWAY }}
+        run: scripts/nightly-probe.sh
+
+      - name: Supabase snapshot
+        if: always()
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PROBES_JSON: ${{ steps.probe.outputs.probes }}
+          PROBES_OK: ${{ steps.probe.outputs.ok }}
+        run: scripts/nightly-snapshot.sh
+
+      - name: Fail if a probe failed
+        if: always() && steps.probe.outputs.ok == 'false'
+        run: |
+          echo "::error::One or more configured health probes failed (see Probe targets step)"
+          exit 1
+
+  # Same journey as the app.yml e2e job (J1–J6, listed at the top of app/web/e2e/journey.e2e.ts),
+  # pointed straight at the repository variable E2E_BASE_URL — the deployment under test, e.g. the
+  # playground. Until the secrets are configured every test skips ("skipped: no E2E secrets",
+  # exit 0), so the nightly stays green either way.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: app/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+
+      - name: Check the E2E configuration
+        id: cfg
+        env:
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          E2E_MCP_URL: ${{ secrets.E2E_MCP_URL }}
+          E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
+        run: |
+          set -euo pipefail
+          configured=false
+          if [ -n "${E2E_EMAIL:-}" ] && [ -n "${E2E_PASSWORD:-}" ]; then configured=true; fi
+          if [ -n "${E2E_MCP_URL:-}" ]; then configured=true; fi
+          if [ "$configured" = false ]; then
+            echo "skipped: no E2E secrets — set E2E_EMAIL, E2E_PASSWORD, E2E_WA_NUMBER, E2E_MCP_URL (secrets) and E2E_BASE_URL (variable) to run the nightly journey."
+            echo "secrets_missing=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "secrets_missing=false" >> "$GITHUB_OUTPUT"
+            if [ -z "${E2E_BASE_URL:-}" ]; then
+              echo "skipped: no E2E_BASE_URL variable — nothing to run the journey against."
+              configured=false
+            else
+              echo "Journey target: $E2E_BASE_URL"
+            fi
+          fi
+          echo "configured=$configured" >> "$GITHUB_OUTPUT"
+
+      # No secrets and no target → do not spend a browser install on a run that skips everything.
+      - name: Install Chromium
+        if: steps.cfg.outputs.configured == 'true'
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run the Playwright journey
+        id: journey
+        # Secrets but no target → do not run (there is nothing to test and no server to test
+        # against); secrets missing, or fully configured → run, the suite itself skips if needed.
+        if: steps.cfg.outputs.secrets_missing == 'true' || steps.cfg.outputs.configured == 'true'
+        env:
+          BASE_URL: ${{ vars.E2E_BASE_URL || 'http://localhost:3000' }}
+          SECRETS_MISSING: ${{ steps.cfg.outputs.secrets_missing }}
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          E2E_WA_NUMBER: ${{ secrets.E2E_WA_NUMBER }}
+          E2E_MCP_URL: ${{ secrets.E2E_MCP_URL }}
+        # Unconfigured → the suite skips all seven tests with "skipped: no E2E secrets" and exits 0;
+        # no browser is launched, so the skipped Chromium install cannot fail this step.
+        run: |
+          if [ "$SECRETS_MISSING" = "true" ]; then
+            echo "skipped: no E2E secrets"
+          fi
+          bun run test:e2e
+
+      - name: Upload the Playwright report
+        if: ${{ !cancelled() && steps.journey.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-nightly
+          path: app/web/playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore

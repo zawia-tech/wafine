@@ -1,0 +1,33 @@
+# cp terraform.tfvars.example terraform.tfvars   (git-ignored)
+cloudflare_api_token = "cf-api-token-with-tunnel-access-dns-r2-scopes"
+account_id           = "your-cloudflare-account-id"
+zone_id              = "your-zone-id"
+zone_name            = "example.com"   # must be an ACTIVE Cloudflare zone
+gateway_public       = false   # true = publish gw.<zone> behind Access (needs Zero Trust enabled)
+gateway_subdomain    = "gw"    # OpenWA gateway via the tunnel, behind Access
+api_public           = false   # true = publish api.<zone> (only after the sign-up PR is on main)
+api_subdomain        = "api"   # BFF via the tunnel
+web_subdomain        = "wa"    # web app on Vercel (DNS-only CNAME)
+web_cname_target     = "ecf5cad605f55ef6.vercel-dns-017.com"   # `vercel domains inspect web.<zone>`
+tunnel_name          = "wafine-vm"
+access_emails        = ["you@example.com"]   # only used when gateway_public = true
+r2_media_bucket_name    = "openwa-media"
+r2_backups_bucket_name = "openwa-backups"
+r2_location             = "eeur"   # EU jurisdiction
+docs_subdomain       = "docs"   # docs site on Vercel (Basic Auth)
+docs_cname_target    = ""       # vercel api /v6/domains/docs.<zone>/config -> recommendedCNAME
+docs_vercel_verify   = ""       # `_vercel` TXT challenge value, e.g. vc-domain-verify=docs.<zone>,...
+
+# Cloudflare for SaaS (option A in docs/15-launch-checklist.md): API hostnames that live
+# in a zone we do NOT manage. Empty = nothing is created and the plan has no diff.
+# After apply, read the records the DNS holder must add:
+#   scripts/tf cloudflare output -json custom_hostname_dns
+custom_hostnames = []             # e.g. ["api.example.com"]
+custom_hostname_ssl_method = "txt"   # txt | http | email (txt = one TXT record at the DNS holder)
+fallback_origin_subdomain = "origin" # proxied CNAME in this zone; its FQDN is the CNAME target
+
+# Extra Vercel hostnames (optional). Values come from Vercel after adding the domain to a project.
+# vercel_extra_hosts = {
+#   "app2"      = { cname_target = "<hash>.vercel-dns-017.com", verify_txt = "vc-domain-verify=app2.example.com,<code>" }
+#   "docs.app2" = { cname_target = "<hash>.vercel-dns-017.com", verify_txt = "vc-domain-verify=docs.app2.example.com,<code>" }
+# }

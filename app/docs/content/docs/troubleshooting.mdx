@@ -1,0 +1,60 @@
+---
+title: Troubleshooting
+description: Answers to the errors WaFine can give you, from a refused QR scan to a 429.
+---
+
+## Sign-up and linking
+
+**The QR code does not scan.** The QR rotates while you are linking. Create the session
+again to get a fresh code and scan quickly, from WhatsApp's **Linked devices** screen
+(**Link a device**), not from a photo on a second screen.
+
+**"Phone mismatch" after scanning.** You linked a different number than the one you signed
+up with. WaFine logs that device out. Delete the session and scan with the invited number.
+
+**The session shows as disconnected later.** WhatsApp may log a linked device out, for
+example after long inactivity or a number change. Reopen the **WhatsApp** page and scan a
+new QR code. You can always check the device under **Linked devices** on your phone.
+
+## API responses
+
+**`401` Missing or invalid API key.** The key is wrong, revoked, or not sent in the
+`X-API-Key` header. Keys start with `owa_`. A key is shown only once at creation — if you
+lost it, revoke it on the **WhatsApp** page and create a new one.
+
+**`403` Not allowed for this key.** Every key is scoped to your own session. Do not point
+the request at another session's ID, and do not try to delete your session through the API.
+A disabled account also answers `403` on every route.
+
+**`429` with a `Retry-After` header.** Your session's send budget is used up (by default
+300 sends per day, 10 per minute) or the key hit its request rate. Wait the given delay;
+do not retry in a tight loop. Failed REST sends are refunded, so nothing was lost.
+
+**`413` Request body too large.** Media sends carry the file as base64 in the JSON body.
+Keep total requests under the ceiling — compress images and audio before sending bigger
+files.
+
+## Claude and MCP
+
+**Claude cannot reach the connector.** Claude connects from its own cloud, so the endpoint
+must be reachable on the public internet, and your WhatsApp session must exist and be
+connected first. Check that the URL is your MCP endpoint from the web app and that the
+connector is enabled for the conversation (the **+** button, then **Connectors**).
+
+**A tool call answers an error instead of a message.** If the text mentions limits, the
+send budget is used up — say so to your user or wait. If the session is disconnected,
+relink it on the **WhatsApp** page first.
+
+## Auto-replies
+
+**No auto-reply answered.** Rules start off — switch them on under **Workflows**. They
+reply only to allowlisted contacts' text messages: never to groups, media, or unknown
+numbers, and at most twice a minute per contact. The [workflows](/workflows) page has the
+full rules.
+
+## Still stuck
+
+Join the community channels linked from the WaFine website and include: the endpoint you
+called, the HTTP status and error body (remove your key and any phone number from it
+first), and your session's status as shown on the **WhatsApp** page. Never paste your API
+key anywhere, in a bug report or a chat.

@@ -1,0 +1,41 @@
+---
+title: Quickstart
+description: Already invited and signed up? Link your number, create a key and send your first message in five minutes.
+---
+
+You have your invite and an account (if not, [Getting started](/getting-started) covers
+sign-up first). Everything below happens on the **WhatsApp** page of the web app, and you
+need a terminal with `curl`.
+
+## 1. Link your number
+
+1. On the **WhatsApp** page, create your session. A QR code appears.
+2. On your phone, open WhatsApp, go to **Linked devices**, choose **Link a device** and scan.
+3. Wait until the session shows as connected. The number you scan with must be the one you
+   signed up with.
+
+## 2. Create an API key
+
+Still on the **WhatsApp** page, create an API key and copy it immediately — it is shown once
+and WaFine keeps only a hash of it.
+
+## 3. Send a message
+
+The same page shows your **session ID** and the **REST base URL**. Fill in those two values
+and the recipient's number (international format without `+`, followed by `@c.us`):
+
+```bash
+curl -X POST "https://api.example.com/wa/sessions/<session-id>/messages/send-text" \
+  -H "X-API-Key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"chatId":"2126XXXXXXXX@c.us","text":"Hello from WaFine"}'
+```
+
+Message yourself or someone who expects it. A `429` answer means you hit the send budget:
+wait the `Retry-After` delay and try again.
+
+## What next
+
+- [API keys and sessions](/api-keys-and-sessions): read chats, manage keys.
+- [Tutorial](/tutorial): a paced auto-reply and Claude connected, end to end.
+- [Troubleshooting](/troubleshooting): when something answers an error you did not expect.

@@ -1,0 +1,63 @@
+---
+title: Diagnostic
+description: Les réponses aux erreurs que WaFine peut vous renvoyer, du QR refusé au 429.
+---
+
+## Inscription et liaison
+
+**Le QR code ne se scanne pas.** Le QR tourne pendant la liaison. Recréez la session pour
+obtenir un code frais et scannez vite, depuis l'écran **Linked devices** de WhatsApp
+(**Link a device**), pas depuis une photo sur un second écran.
+
+**« Phone mismatch » après le scan.** Vous avez relié un autre numéro que celui inscrit.
+WaFine déconnecte cet appareil. Supprimez la session et scannez avec le numéro invité.
+
+**La session apparaît déconnectée plus tard.** WhatsApp peut déconnecter un appareil
+connecté, par exemple après une longue inactivité ou un changement de numéro. Réouvrez la
+page **WhatsApp** et scannez un nouveau QR code. Vous pouvez toujours vérifier l'appareil
+dans **Linked devices** sur votre téléphone.
+
+## Réponses de l'API
+
+**`401` Missing or invalid API key.** La clé est fausse, révoquée, ou non envoyée dans
+l'en-tête `X-API-Key`. Les clés commencent par `owa_`. Une clé n'est affichée qu'une fois à
+sa création — si vous l'avez perdue, révoquez-la sur la page **WhatsApp** et créez-en une
+nouvelle.
+
+**`403` Not allowed for this key.** Chaque clé est limitée à votre propre session. Ne
+pointez pas la requête vers l'ID d'une autre session et n'essayez pas de supprimer votre
+session via l'API. Un compte désactivé répond aussi `403` sur toutes les routes.
+
+**`429` avec un en-tête `Retry-After`.** Le quota d'envoi de votre session est épuisé
+(par défaut 300 envois par jour, 10 par minute) ou la clé a atteint sa limite de débit.
+Attendez le délai indiqué ; ne réessayez pas en boucle serrée. Les envois REST refusés sont
+remboursés, donc rien n'a été perdu.
+
+**`413` Request body too large.** Les envois de média portent le fichier en base64 dans le
+corps JSON. Restez sous le plafond — compressez images et audio avant d'envoyer de plus
+gros fichiers.
+
+## Claude et MCP
+
+**Claude n'atteint pas le connecteur.** Claude se connecte depuis son propre cloud : le
+endpoint doit être joignable sur Internet public, et votre session WhatsApp doit exister et
+être connectée d'abord. Vérifiez que l'URL est votre endpoint MCP de l'application web et
+que le connecteur est activé pour la conversation (bouton **+**, puis **Connectors**).
+
+**Un outil répond une erreur au lieu d'un message.** Si le texte parle de limites, le
+quota est épuisé — signalez-le à votre utilisateur ou attendez. Si la session est
+déconnectée, reliez-la d'abord sur la page **WhatsApp**.
+
+## Réponses automatiques
+
+**Aucune réponse automatique n'a répondu.** Les règles démarrent désactivées — activez-les
+dans **Workflows**. Elles ne répondent qu'aux messages texte de contacts allowlistés :
+jamais aux groupes, médias ou numéros inconnus, et au plus deux fois par minute par
+contact. La page [Workflows](/fr/workflows) détaille les règles.
+
+## Toujours bloqué ?
+
+Rejoignez les canaux communautaires liés depuis le site WaFine en donnant : le endpoint
+appelé, le statut HTTP et le corps d'erreur (sans votre clé ni numéro de téléphone) et le
+statut de votre session tel qu'affiché sur la page **WhatsApp**. Ne collez jamais votre
+clé API nulle part, ni dans un bug ni dans un chat.

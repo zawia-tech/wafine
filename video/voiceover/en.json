@@ -1,0 +1,13 @@
+{
+  "locale": "en",
+  "lines": [
+    { "scene": "brand", "text": "Meet WaFine: WhatsApp, with an AI teammate." },
+    { "scene": "invite", "text": "First, request an invite with your email and number." },
+    { "scene": "qr", "text": "Then scan the QR in WaFine with WhatsApp, under Linked devices." },
+    { "scene": "key", "text": "Create an API key. It shows once, so save it." },
+    { "scene": "curl", "text": "Send your first message with one request. Try messaging yourself." },
+    { "scene": "replies", "text": "Auto-replies take their time, so your number stays human." },
+    { "scene": "mcp", "text": "Finally, add WaFine to Claude as a custom connector." },
+    { "scene": "outro", "text": "That's it. See you on the waitlist." }
+  ]
+}

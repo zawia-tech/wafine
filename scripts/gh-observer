@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Lists new GitHub activity on this repo (issues, PRs, comments, review comments) since the last run,
+# one JSON object per line. Comments written by the Claude observer itself carry the marker
+# <!-- claude-observer --> and are skipped, so its own replies never re-trigger it.
+#
+#   scripts/gh-observer                 # events since the last run, then advance the cursor
+#   scripts/gh-observer --peek          # same, but do not advance the cursor
+#   scripts/gh-observer --since 2026-10-07T18:00:00Z [--peek]
+set -euo pipefail
+REPO="${GH_REPO:-zawia-tech/wafine}"
+MARK='<!-- claude-observer -->'
+STATE="$HOME/.cache/infra-observer/last-seen"
+mkdir -p "$(dirname "$STATE")"
+
+# Portable platform helpers (macOS BSD vs Linux GNU). See scripts/lib/os.sh.
+. "$(cd "$(dirname "$0")" && pwd)/lib/os.sh"
+
+PEEK=0; SINCE=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --peek) PEEK=1 ;;
+    --since) SINCE="$2"; shift ;;
+    *) echo "unknown arg $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+if [ -z "$SINCE" ]; then
+  if [ -f "$STATE" ]; then
+    SINCE="$(cat "$STATE")"
+  else
+    # First run: default to 2 hours ago. `date -v` is BSD-only and `date -d` is GNU-only,
+    # so go through the helper — and fail LOUDLY. A silent empty cursor here makes the
+    # `since=` query parameter blank, which returns every issue ever and re-triggers the
+    # observer on its own backlog.
+    if ! SINCE="$(date_ago 2 HOURS +%Y-%m-%dT%H:%M:%SZ)"; then
+      echo "✗ cannot compute the default --since on $OS_FAMILY/$OS_ARCH; pass --since explicitly" >&2
+      exit 1
+    fi
+  fi
+fi
+[ -n "$SINCE" ] || { echo "✗ refusing to run with an empty --since (would re-scan the whole repo)" >&2; exit 1; }
+NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+# Issues and PRs (the issues endpoint returns both) created or updated since the cursor.
+gh api --paginate "repos/$REPO/issues?state=all&sort=updated&direction=asc&since=$SINCE&per_page=100" \
+  --jq ".[] | select(.updated_at >= \"$SINCE\") | {
+        kind: (if .pull_request then \"pr\" else \"issue\" end), number, title, state,
+        author: .user.login, created_at, updated_at, labels: [.labels[].name],
+        url: .html_url, body: ((.body // \"\") | .[0:2000]) }"
+
+# Conversation comments on issues and PRs.
+gh api --paginate "repos/$REPO/issues/comments?since=$SINCE&per_page=100" \
+  --jq ".[] | select(((.body // \"\") | contains(\"$MARK\")) | not) | {
+        kind: \"comment\", number: (.issue_url | split(\"/\") | last | tonumber),
+        author: .user.login, updated_at, url: .html_url, body: ((.body // \"\") | .[0:2000]) }"
+
+# Inline review comments on PR diffs.
+gh api --paginate "repos/$REPO/pulls/comments?since=$SINCE&per_page=100" \
+  --jq ".[] | select(((.body // \"\") | contains(\"$MARK\")) | not) | {
+        kind: \"review_comment\", number: (.pull_request_url | split(\"/\") | last | tonumber),
+        author: .user.login, path, line, updated_at, url: .html_url, body: ((.body // \"\") | .[0:2000]) }"
+
+[ "$PEEK" = 1 ] || echo "$NOW" > "$STATE"

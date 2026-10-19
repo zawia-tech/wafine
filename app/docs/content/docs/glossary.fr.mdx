@@ -1,0 +1,52 @@
+---
+title: Glossaire
+description: Les mots que WaFine emploie, de allowlist à send budget.
+---
+
+Les termes que vous rencontrez dans ces pages, par ordre alphabétique.
+
+**Allowlist.** La liste des contacts qu'une réponse automatique peut saluer. Une règle ne
+répond jamais à un contact hors de votre allowlist, ni aux groupes, médias ou numéros
+inconnus.
+
+**API key (clé API).** Un jeton secret qui permet à vos scripts d'appeler l'API REST de
+WaFine (`owa_...`). Elle est limitée à votre session, affichée une fois et stockée par
+WaFine seulement sous forme de hash.
+
+**Chat ID.** Comment WhatsApp désigne une conversation : le numéro du participant au
+format international, sans `+`, espaces ni points, suivi de `@c.us` — par exemple
+`2126XXXXXXXX@c.us` pour le numéro `+212 6XX XX XX XX`.
+
+**Linked device (appareil connecté).** Ce que WaFine est pour WhatsApp : le même type de
+connexion que WhatsApp Web. Votre téléphone reste l'appareil principal et vous pouvez
+retirer l'appareil WaFine à tout moment dans **Linked devices**.
+
+**MCP.** Le Model Context Protocol, une façon standard pour des assistants de parler à des
+outils. WaFine expose votre session comme serveur MCP en Streamable HTTP, pour que Claude
+(ou tout client MCP) lise les conversations et envoie des messages.
+
+**OAuth.** Le flux de connexion que Claude utilise sur l'endpoint MCP : votre navigateur
+ouvre WaFine, vous vous connectez et approuvez, et le client reçoit des jetons au lieu de
+détenir votre clé API.
+
+**REST base URL.** La racine HTTPS de l'API que vous appelez avec une clé et un ID de
+session — la base des chemins comme `/wa/sessions/<session-id>/messages/send-text`.
+
+**Send budget (quota d'envoi).** Le nombre de messages que votre session peut envoyer via
+l'API par jour et par minute (par défaut 300 par jour, 10 par minute). Les lectures ne
+comptent jamais. Au-delà du quota, l'API répond `429` avec un délai `Retry-After`.
+
+**Session.** Un numéro WhatsApp connecté. Chaque compte WaFine a exactement une session ;
+vous la reliez par QR et la reliez à nouveau quand WhatsApp la déconnecte.
+
+**Session ID.** L'identifiant de votre session, affiché sur la page WhatsApp ; les chemins
+API le portent.
+
+**Numéro préchauffé.** Un numéro qui a une vraie histoire — conversations, contacts, un
+profil — utilisé normalement pendant des jours avant l'automatisation. Un numéro neuf qui
+commence à envoyer tout de suite ressemble à du spam pour WhatsApp ; voir
+[Utiliser WhatsApp](/fr/using-whatsapp).
+
+**Workflows.** Les réponses automatiques rythmées intégrées de WaFine : des réponses fixes
+aux contacts connus, sans IA, au plus deux réponses par contact et par minute. Voir
+[Workflows](/fr/workflows).

@@ -1,0 +1,79 @@
+---
+title: API keys and sessions
+description: Create an API key, understand its scope, and send and read messages over REST.
+---
+
+Your WaFine account has one WhatsApp session. API keys let your scripts and apps use that
+session over HTTPS.
+
+## Sessions
+
+- Each account has **one session**, linked to the number you signed up with.
+- Create it, and relink it by QR when needed, from the **WhatsApp** page in the web app.
+- **Deleting the session revokes every key** attached to it.
+
+You can list your session, for example to read its ID and status:
+
+```bash
+curl "https://api.example.com/wa/sessions" -H "X-API-Key: <your-key>"
+```
+
+## Create a key
+
+1. Open the **WhatsApp** page in the web app. Your session must exist.
+2. Create an API key.
+3. Copy it at once. WaFine shows it only once and keeps only a hash of it.
+
+You can have up to **five active keys**. Revoke one to create another. Use a separate key
+per app or machine, so you can revoke one without breaking the others.
+
+## Key scope
+
+Every key is limited to **your own session**:
+
+- It can read your chats and messages and send messages from your number.
+- It cannot see other users' sessions, change server settings or delete your session.
+- It is subject to your session's send budget (see [Using WhatsApp](/using-whatsapp)).
+- It is rate-limited, by default to 120 requests per minute.
+
+Treat a key like a password. Keep it out of code repositories, chats and screenshots.
+If a key leaks, revoke it from the **WhatsApp** page.
+
+## Send a message
+
+Send the key in the `X-API-Key` header. The chat ID is the number in international format
+without `+`, followed by `@c.us`.
+
+```bash
+curl -X POST "https://api.example.com/wa/sessions/<session-id>/messages/send-text" \
+  -H "X-API-Key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"chatId":"2126XXXXXXXX@c.us","text":"Your order is ready for pickup."}'
+```
+
+Over the send budget, the API answers `429` with a `Retry-After` header. Wait before
+trying again.
+
+## Read messages
+
+List your chats:
+
+```bash
+curl "https://api.example.com/wa/sessions/<session-id>/chats" \
+  -H "X-API-Key: <your-key>"
+```
+
+Read the latest messages of one chat:
+
+```bash
+curl "https://api.example.com/wa/sessions/<session-id>/messages?chatId=2126XXXXXXXX@c.us&limit=20" \
+  -H "X-API-Key: <your-key>"
+```
+
+Reads never count against your send budget. Media in messages has no public URL: the files
+sit in a private bucket, and WaFine only hands your key short-lived links (at most an hour)
+to files that belong to your own session.
+
+## Revoke a key
+
+Open the **WhatsApp** page and revoke the key. It stops working immediately.

@@ -1,0 +1,62 @@
+#cloud-config
+# Rendered by Terraform templatefile(): literal dollar-braces must be written as $${...}
+hostname: ${hostname}
+package_update: true
+package_upgrade: true
+packages:
+  - ca-certificates
+  - curl
+  - jq
+  - age            # optional encryption of backups (stack/backup.sh)
+  - rsync
+  - unattended-upgrades
+
+write_files:
+  - path: /etc/docker/daemon.json
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": { "max-size": "10m", "max-file": "5" },
+        "live-restore": true
+      }
+  - path: /etc/sysctl.d/99-tailscale.conf
+    content: |
+      net.ipv4.ip_forward = 1
+      net.ipv6.conf.all.forwarding = 1
+
+runcmd:
+%{ if direct_udp ~}
+  # Tailscale direct connections: accept UDP 41641 ahead of OCI's REJECT rule and persist it now,
+  # BEFORE Docker adds its own chains (saving later would freeze Docker's rules into rules.v4).
+  - iptables -I INPUT -p udp --dport 41641 -j ACCEPT
+  - netfilter-persistent save
+%{ endif ~}
+  # zram: compressed swap held in RAM. openwa-api is capped at OPENWA_MEM_LIMIT (8g) on a 12 GB box;
+  # with no swap the OOM killer takes the OS or tailscaled first, dropping the box off the tailnet.
+  # zstd over lz4: better ratio for max effective capacity; compression only costs CPU under pressure.
+  # PRD risk R5 / mitigation F1.
+  - apt-get install -y zram-tools
+  - printf 'ALGO=zstd\nPERCENT=50\nPRIORITY=100\n' > /etc/default/zramswap
+  # enable + restart, not `enable --now`: if the package postinst already started the unit with the
+  # stock lz4 config, `--now` is a no-op and the zstd settings above would not apply until reboot.
+  - systemctl enable zramswap && systemctl restart zramswap
+
+  # Docker Engine + compose plugin (official convenience script, arm64 + amd64)
+  - curl -fsSL https://get.docker.com | sh
+  - usermod -aG docker ubuntu
+  - systemctl enable --now docker
+
+  # Tailscale on the HOST (not in a container) so Tailscale SSH reaches the box itself.
+  # OCI's Ubuntu image keeps its iptables INPUT REJECT rule; tailscaled inserts its own
+  # ts-input chain ahead of it, so tailnet traffic is accepted and the public NIC stays closed.
+  - curl -fsSL https://tailscale.com/install.sh | sh
+  - sysctl --system
+  # --accept-dns=false: per Tailscale's OCI guide, let Oracle's resolver keep handling DNS on the VM.
+  # No --advertise-routes: one VM, nothing to route, and 169.254.169.254 (instance metadata) must
+  # never be reachable from the tailnet.
+  - tailscale up --auth-key='${tailscale_auth_key}' --ssh --hostname='${hostname}' --advertise-tags=tag:server --accept-dns=false
+  # Wipe the one-time key from cloud-init's on-disk copy.
+  - shred -u /var/lib/cloud/instance/user-data.txt || true
+
+  - install -d -o ubuntu -g ubuntu /opt/wa
+  - echo "cloud-init done $(date -Is)" > /opt/wa/.provisioned

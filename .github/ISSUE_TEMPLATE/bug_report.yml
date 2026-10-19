@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible bug
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: ["OCI VM / network", "OpenWA container", "WhatsApp session", "Supabase DB / storage", "Tailscale", "Cloudflare", "Scripts / IaC", "BFF", "Web", "Docs", "Other"]
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options: ["down — nothing works", "degraded", "minor / cosmetic"]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. ... 2. ... 3. ..."
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence (redacted)
+      description: "Commands and output. Redact keys, passwords, tokens, phone numbers, QR codes."
+      render: shell
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety
+      options:
+        - label: Logs above are redacted — no secrets, API keys, QR codes or personal phone numbers
+          required: true

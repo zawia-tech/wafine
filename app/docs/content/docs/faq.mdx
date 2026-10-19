@@ -1,0 +1,63 @@
+---
+title: FAQ
+description: Short answers about the unofficial client, your data, access and pricing.
+---
+
+## Is WaFine an official WhatsApp product?
+
+No. WaFine runs on [OpenWA](https://github.com/rmyndharis/OpenWA), an unofficial,
+open-source WhatsApp client that connects as a linked device, like WhatsApp Web. WaFine is
+not affiliated with, authorized by or endorsed by WhatsApp or Meta.
+
+## What are the risks of an unofficial client?
+
+WhatsApp can restrict or ban numbers it sees as automated or abusive. WaFine reduces the
+risk with send budgets, paced auto-replies and keys scoped to your own session, but it cannot
+remove it. Use a dedicated, warmed-up number and never send cold bulk messages. See
+[Using WhatsApp](/using-whatsapp).
+
+## Where does my data live?
+
+- **Account data, keys and message records:** a Postgres database in the EU (Paris).
+- **Media files:** stored privately in the EU and shown only to you when you are signed in.
+- **The WhatsApp session:** on WaFine's server in Morocco.
+
+More detail on [Security and privacy](/security-and-privacy).
+
+## Does WaFine store my API keys?
+
+Only a hash. A key is shown once when you create it. If you lose it, revoke it and create
+a new one.
+
+## Why is sign-up invite-only?
+
+To keep usage small and well-behaved during early release. Request an invite from the
+WaFine website. You then sign up with the WhatsApp number that was invited, and only that
+number can be linked to your account.
+
+## Can I use more than one number?
+
+Not yet. Each account has one WhatsApp session, linked to the invited number.
+
+## Does my phone need to stay online?
+
+No. Your phone remains the primary device, but the session keeps running on WaFine's
+server. If WhatsApp logs the linked device out, scan a new QR code.
+
+## Can Claude send messages for me?
+
+Yes, if you allow it. The MCP endpoint offers read and send tools. You can turn off the send
+tools in Claude, or keep approval on for each send. See [MCP and Claude](/mcp-and-claude).
+
+## Something is not working — where do I start?
+
+[Troubleshooting](/troubleshooting) covers the errors the API, the QR scan and the Claude
+connector give you, with what each of them means.
+
+## How much does WaFine cost?
+
+Pricing is not public yet.
+
+## Can I run WaFine myself?
+
+Yes. WaFine is open-core. See [Self-hosting](/self-hosting) for the components.

@@ -1,0 +1,19 @@
+# cp terraform.tfvars.example terraform.tfvars   (terraform.tfvars is git-ignored)
+# Auth is read from ~/.oci/config (run `oci setup bootstrap` first). tenancy= is in that file too.
+oci_profile  = "DEFAULT"
+tenancy_ocid = "ocid1.tenancy.oc1..xxxx"
+
+region           = "af-casablanca-1"       # Morocco West (LEJ). Must be your HOME region for Always Free
+compartment_ocid = ""                      # empty = terraform creates the "wa-infra" compartment
+
+name           = "wafine-vm"
+shape          = "VM.Standard.A1.Flex"
+ocpus          = 2    # Always Free ceiling since June 2026
+memory_gbs     = 12
+ssh_public_key = "ssh-ed25519 AAAA... you@mac"
+admin_cidr     = ""                         # leave empty: no inbound ports at all
+tailscale_direct_udp = false               # true opens UDP 41641 for direct Tailscale peers (Tailscale OCI guide)
+
+# Tailscale admin > Settings > Keys: reusable=false, pre-approved, tags=tag:server, expiry 1 day
+tailscale_auth_key = "tskey-auth-xxxx"
+

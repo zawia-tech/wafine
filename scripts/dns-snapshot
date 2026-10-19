@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Snapshot of a zone's well-known records from a given nameserver, normalised for diffing.
+# Used for the ai4x.academy Netlify → Cloudflare move: snapshot the old NS, stage Cloudflare,
+# snapshot the new NS, diff. Only probes known names (no zone transfer), so ALSO export the full
+# record list from the Netlify dashboard before switching nameservers.
+#   scripts/dns-snapshot ai4x.academy dns1.p02.nsone.net > dns/ai4x.academy.before.txt
+#   scripts/dns-snapshot ai4x.academy <name>.ns.cloudflare.com > dns/ai4x.academy.after.txt
+#   diff <(grep -v '^#' dns/ai4x.academy.before.txt) <(grep -v '^#' dns/ai4x.academy.after.txt)
+set -euo pipefail
+Z="${1:?zone}"; NS="${2:?nameserver}"
+
+q() {  # name type -> "name | type | value" (TTL left out so it doesn't pollute the diff)
+  dig +noall +answer @"$NS" "$1" "$2" 2>/dev/null \
+    | awk -v want="$2" '$4==want { v=""; for (i=5;i<=NF;i++) v=v (i>5?" ":"") $i; print tolower($1)" | "$4" | "v }'
+}
+
+echo "# $Z from $NS at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+{
+  for t in A AAAA MX TXT CAA NS; do q "$Z" "$t"; done
+  for n in www _dmarc mail app api learn blog docs admin dashboard crm coaching academy portal status wa \
+           shop store pay forms bootcamp formation lms go link links cal booking; do
+    for t in A AAAA CNAME TXT MX; do q "$n.$Z" "$t"; done
+  done
+  for s in google mail default k1 k2 k3 s1 s2 selector1 selector2 brevo1 brevo2 mailjet sib dkim zoho; do
+    for t in TXT CNAME; do q "$s._domainkey.$Z" "$t"; done
+  done
+  for n in _autodiscover._tcp autodiscover _sip._tls _caldavs._tcp _carddavs._tcp; do
+    for t in SRV CNAME; do q "$n.$Z" "$t"; done
+  done
+  q "zz-wildcard-probe.$Z" A; q "zz-wildcard-probe.$Z" CNAME
+} | sort -u

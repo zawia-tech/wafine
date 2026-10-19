@@ -1,0 +1,60 @@
+---
+title: Auto-hébergement
+description: Les composants open-core derrière WaFine, pour les équipes qui veulent faire tourner leur propre pile.
+---
+
+WaFine est open-core. Le service hébergé est la façon la plus simple de l'utiliser, mais les
+mêmes briques peuvent tourner sur votre propre infrastructure. Cette page est une vue
+d'ensemble, pas un guide d'installation.
+
+## Composants
+
+| Composant | Rôle |
+|---|---|
+| [OpenWA](https://github.com/rmyndharis/OpenWA) | Le moteur WhatsApp : un client WhatsApp non officiel et open-source qui fait tourner des sessions d'appareils connectés et expose une API REST et un serveur MCP. |
+| Backend pour frontend (BFF) | La couche API publique : inscription et connexion, sessions et clés API par utilisateur, quota d'envoi, workflows de réponses automatiques rythmées, et OAuth pour les clients MCP comme Claude. |
+| Application web | Le tableau de bord où les utilisateurs lient WhatsApp par QR, gèrent les clés et les applications connectées, et activent ou désactivent les workflows. |
+| Postgres | Comptes, clés, métadonnées de session et enregistrements de messages. |
+| Stockage objet compatible S3 | Fichiers média et sauvegardes, gardés privés et servis via des liens à durée courte. |
+
+## Comment les pièces s'emboîtent
+
+```text
+users and agents ──HTTPS──▶ BFF ──▶ OpenWA ──▶ WhatsApp
+                             │         │
+                             ▼         ▼
+                          Postgres   object store
+```
+
+- Seul le BFF est exposé à Internet. OpenWA reste sur un réseau privé.
+- Le BFF détient la clé admin du moteur et délivre à chaque utilisateur une clé limitée à sa
+  propre session.
+- L'état de session WhatsApp vit sur le volume du moteur. Traitez-le comme une information
+  de connexion et chiffrez ses sauvegardes.
+
+## Ce dont vous avez besoin
+
+- Un hôte Linux capable d'exécuter des conteneurs.
+- Une base Postgres.
+- Un compartiment compatible S3 pour les médias et les sauvegardes.
+- Un domaine pour l'application web et l'API, avec TLS.
+- Un numéro WhatsApp qui suit les recommandations de
+  [Utiliser WhatsApp](/fr/using-whatsapp).
+
+## Ce qu'il faut décider avant de commencer
+
+- **Localisation des données.** Choisissez où tournent base, médias et moteur, et vérifiez ce
+  que disent vos règles locales de protection des données sur leurs transferts.
+- **Exposition.** Gardez le moteur en privé et ne publiez que le BFF.
+- **Limites d'envoi.** Gardez le rythme actif et fixez un quota d'envoi prudent pour chaque
+  numéro.
+
+## Pour aller plus loin
+
+- [OpenWA sur GitHub](https://github.com/rmyndharis/OpenWA) : documentation du moteur,
+  configuration et référence API.
+- [Versions d'OpenWA](https://github.com/rmyndharis/OpenWA/releases) : versions et notes.
+
+Faire tourner un client WhatsApp non officiel sur votre propre infrastructure comporte le
+même risque de bannissement que le service hébergé. Vous êtes responsable des numéros que
+vous connectez.

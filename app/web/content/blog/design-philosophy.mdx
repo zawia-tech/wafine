@@ -1,0 +1,49 @@
+---
+title: "Design and Philosophy — Brand, Pacing as Respect, Privacy by Design"
+description: "The WaFine design system (pine/cream/clay, Fredoka/Inter/Noto Arabic, three-step elevation), pacing as respect for the number, privacy by design — no surveillance console."
+date: 2026-10-18
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [design, philosophy, brand, privacy]
+draft: true
+stage: educate
+---
+
+## Brand identity
+
+**Name.** WaFine (capital W, capital F). Arabic `وافين` (Darija for "where are you"). The older `WAFINE` caps appears in vault notes and some repo docs; it is not used in marketing.
+
+**Mark.** A rounded speech bubble carrying `وافين` — the Arabic wordmark is the HarfBuzz-shaped Noto Kufi Arabic Black outline, used verbatim from `docs/design-system/assets/Logos/wafine-mark.svg`. Never redraw, retype, mirror, or re-letter. Below ~48 px the word is illegible: the tab icon and favicon are the plain bubble. The 512 px app icon stays a plain bubble until the owner finishes the Inkscape polish.
+
+**Palette.** Pine `#1c5c42` (primary, deliberately not WhatsApp green), cream `#fcfaf6` (base-100, page ground), clay `#a5562f` (secondary, warm counterweight), ochre (accent, reserved), deep pine-ink (neutral, dark bands). Dark theme: deep pine-ink ground `#0f1512` with lightened brand hues and dark text on every coloured fill.
+
+**Type.** Fredoka 600 for every heading (display, h1, h2, card-title), tracking `-0.02em`. Inter for body and interface copy. Noto Sans Arabic behind both per glyph (neither Fredoka nor Inter has an Arabic subset), then `system-ui`. Code uses the system mono stack.
+
+**Depth.** Three-step elevation, tinted pine, never neutral grey:
+- `elevation-rest` — border only, no shadow (default, app screens)
+- `elevation-raised` — soft pine-tinted shadow (feature cards on hover, marked step badges)
+- `elevation-floating` — deeper pine-tinted shadow (hero chat-thread layer, overlay panels)
+
+**Credits line.** "WaFine, sponsored by Ai4x Academy, built by ZawIA.Tech, open-core on OpenWA." FR: "sponsorisé par Ai4x Academy, construit par ZawIA.Tech". AR: "برعاية Ai4x Academy، وبنية ZawIA.Tech".
+
+**Legal footer.** Every public page and long-form piece carries: WaFine is an independent, unofficial gateway, not affiliated with WhatsApp LLC or Meta Platforms, Inc.; WhatsApp is a trademark of WhatsApp LLC; Claude is a trademark of Anthropic, PBC.
+
+## Pacing as respect
+
+The product's pitch is a number that cannot afford to look like a bot. Pacing is the mechanism: a configurable gap (default 100 s) and a per-day cap (default 300) on auto-replies only. REST and MCP sends are counted against the daily cap but not gap-paced.
+
+This is not "AI-powered" magic. It is a small rule engine you configure. We say what it does: "answers booking questions while you are away" — not "understands your customers". The honest risk wording separates WaFine from the spammers: "Yes — any WhatsApp automation carries that risk, and no gateway can promise otherwise."
+
+## Privacy by design
+
+- Your WhatsApp session stays on our own server (Casablanca VM).
+- The database is in Supabase Paris (eu-west-3). This is an international transfer under Moroccan law 09-08 (risk R10). We describe where data lives; we do not certify compliance.
+- Message content: Supabase, OCI, and Cloudflare cannot read it. The BFF can, transiently, to run automations (`docs/04-e2e-encryption.md` was a design on 2026-10-08; check implementation status before claiming E2E encryption).
+- Keys are scoped to one session, shown once, revocable. Up to 5 active keys per session.
+- OAuth tokens are opaque, stored as SHA-256 only, bound to one grant. Claude's token never reaches OpenWA. Refresh tokens rotate; reuse revokes the whole connection.
+- No emoji in UI or marketing copy. Arrows `→` allowed in step instructions ("Settings → Connectors"). Middle dot ` · ` as separator.
+
+## No surveillance console
+
+The interface is warm and Moroccan — paper and pine, clay accents, a rounded display face — because WaFine is built to feel like a friendly teammate you control, not a surveillance console. The hero visual is the real chat thread (bubbles, ticks, timestamps) rendered in HTML, not a diagram of boxes. No photography, no illustrations.
+
+White-label: tenants override `primary`, `primary-hover` and surface/text tokens at runtime. Build with roles, never literal hex, so tenant themes keep working.

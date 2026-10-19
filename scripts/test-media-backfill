@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+# Offline end-to-end test of stack/media-backfill.sh. A throwaway Postgres 17 (schema + the strip
+# trigger migration + seeded rows) and `rclone serve s3` stand in for Supabase and the object store
+# (Cloudflare R2, EU); a `docker` shim on PATH routes the script's
+# `docker exec openwa-api ...` and `docker run rclone/rclone ...` calls to them. Never touches
+# Supabase, Oracle Cloud or Cloudflare. Needs docker and network access to pull the images.
+#
+#   scripts/test-media-backfill
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REAL_DOCKER="$(command -v docker)"
+ID=$$
+PG="mbf-pg-$ID"
+S3="mbf-s3-$ID"
+NET="mbf-net-$ID"
+T="$(mktemp -d)"
+cleanup() {
+  "$REAL_DOCKER" rm -f "$PG" "$S3" >/dev/null 2>&1 || true
+  "$REAL_DOCKER" network rm "$NET" >/dev/null 2>&1 || true
+  rm -rf "$T"
+}
+trap cleanup EXIT
+
+docker network create "$NET" >/dev/null
+docker run -d --rm --name "$PG" --network "$NET" --tmpfs /var/lib/postgresql/data -e POSTGRES_PASSWORD=t \
+  postgres:17-alpine >/dev/null
+docker run -d --rm --name "$S3" --network "$NET" --tmpfs /data rclone/rclone:latest \
+  serve s3 /data --addr :9000 --auth-key s3test,s3-test-only >/dev/null
+for _ in $(seq 1 90); do # the postgres image restarts once after initdb: wait for the SECOND "ready"
+  [ "$(docker logs "$PG" 2>&1 | grep -c 'ready to accept connections')" -ge 2 ] && break
+  sleep 1
+done
+docker exec "$PG" adduser -D openwa
+
+# ── the `docker` shim the script under test sees ───────────────────────────────────────────
+mkdir -p "$T/bin" "$T/stack"
+cat > "$T/bin/docker" <<'SHIM'
+#!/usr/bin/env bash
+# exec into "openwa-api" -> the test Postgres (TLS off); rclone -> the test network + test S3.
+set -euo pipefail
+if [ "$1" = exec ]; then
+  [ "${*: -2}" = "printenv STORAGE_TYPE" ] && { echo s3; exit 0; }
+  args=()
+  for a in "$@"; do
+    case "$a" in
+      openwa-api) args+=("$MBF_PG") ;;
+      PGSSLMODE=verify-full) args+=("PGSSLMODE=disable") ;;
+      *) args+=("$a") ;;
+    esac
+  done
+  exec "$MBF_REAL_DOCKER" "${args[@]}"
+fi
+if [ "$1" = run ] && [[ " $* " == *" rclone/rclone:latest "* ]]; then
+  export RCLONE_CONFIG_STORE_ENDPOINT="http://$MBF_S3:9000" RCLONE_CONFIG_STORE_PROVIDER=Rclone
+  shift
+  exec "$MBF_REAL_DOCKER" run --network "$MBF_NET" "$@"
+fi
+exec "$MBF_REAL_DOCKER" "$@"
+SHIM
+chmod +x "$T/bin/docker"
+export MBF_REAL_DOCKER="$REAL_DOCKER" MBF_PG="$PG" MBF_S3="$S3" MBF_NET="$NET"
+
+cp "$ROOT/stack/media-backfill.sh" "$T/stack/"
+cat > "$T/stack/.env" <<'ENV'
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=t
+DATABASE_NAME=postgres
+S3_ENDPOINT='https://example.eu.r2.cloudflarestorage.com'
+S3_PROVIDER=Other
+S3_FORCE_PATH_STYLE=true
+S3_ACCESS_KEY_ID=s3test
+S3_SECRET_ACCESS_KEY=s3-test-only
+S3_BUCKET=openwa-media
+BACKUP_BUCKET=openwa-backups
+S3_KEY_PREFIX=media/
+ENV
+
+psql_in() { docker exec -i "$PG" psql -U postgres -X -v ON_ERROR_STOP=1 -q -At "$@"; }
+s3() { # rclone against the test S3, through the shim
+  PATH="$T/bin:$PATH" docker run --rm -e RCLONE_CONFIG_STORE_TYPE=s3 -e RCLONE_CONFIG_STORE_ACCESS_KEY_ID=s3test \
+    -e RCLONE_CONFIG_STORE_SECRET_ACCESS_KEY=s3-test-only -e RCLONE_CONFIG_STORE_ENDPOINT \
+    -e RCLONE_CONFIG_STORE_PROVIDER rclone/rclone:latest "$@"
+}
+for _ in $(seq 1 30); do s3 mkdir store:openwa-media >/dev/null 2>&1 && break; sleep 1; done
+s3 mkdir store:openwa-backups
+
+# ── schema (the columns OpenWA's messages table has that matter here) + trigger + rows ─────
+psql_in <<'SQL'
+create schema openwa;
+create table openwa.messages(
+  id uuid primary key default gen_random_uuid(), "sessionId" varchar not null, "createdAt" timestamptz not null,
+  type varchar not null default 'image', "mediaPath" varchar, "mediaMimetype" varchar, metadata text);
+SQL
+psql_in < "$ROOT/supabase/migrations/20261018130000_openwa_strip_archived_media.sql"
+
+S1=aaaaaaaa-0000-4000-8000-000000000001
+head -c 3001 /dev/urandom > "$T/img.bin"
+head -c 1000 /dev/urandom > "$T/voice.bin"
+IMG=$(base64 -w0 < "$T/img.bin")
+VOICE=$(base64 -w0 < "$T/voice.bin" | tr -d '=') # unpadded, as some engines send it
+psql_in -v s="$S1" -v img="$IMG" -v voice="$VOICE" <<'SQL'
+insert into openwa.messages(id, "sessionId", "createdAt", type, "mediaPath", metadata) values
+ ('10000000-0000-4000-8000-000000000001', :'s', now() - interval '3 h', 'image', null,
+  json_build_object('media', json_build_object('mimetype', 'image/jpeg', 'data', :'img'), 'caption', 'kept')::text),
+ ('10000000-0000-4000-8000-000000000002', :'s', now() - interval '2 h', 'ptt', null,
+  json_build_object('media', json_build_object('mimetype', 'audio/ogg; codecs=opus', 'data', :'voice'))::text),
+ ('10000000-0000-4000-8000-000000000003', :'s', now(), 'image', null, '{"media":{"mimetype":"image/png","data":"https://x.test/a.png"}}'),
+ ('10000000-0000-4000-8000-000000000004', :'s', now(), 'image', 'chat-media/x/already.jpg', '{"media":{"mimetype":"image/jpeg","omitted":true,"sizeBytes":3}}'),
+ ('10000000-0000-4000-8000-000000000005', :'s', now(), 'revoked', null, '{"media":{"mimetype":"image/jpeg","data":"aGk="}}'),
+ ('10000000-0000-4000-8000-000000000006', :'s', now(), 'image', null, '{"media":{"mimetype":"image/jpeg","data":"!!!!"}}'),
+ ('10000000-0000-4000-8000-000000000007', :'s', now(), 'image', null, E'{"media":{"mimetype":"image/jpeg","data":"AA\\u0000"}}'),
+ ('10000000-0000-4000-8000-000000000008', :'s', now(), 'image', null, '{"media":{"mimetype":"image/jpeg","omitted":true,"sizeBytes":9}}'),
+ ('10000000-0000-4000-8000-000000000009', :'s', now(), 'chat', null, '{"quotedMessage":{"data":"x"}}');
+SQL
+before=$(psql_in -c "select md5(string_agg(id::text || coalesce(\"mediaPath\", '') || metadata, ',' order by id)) from openwa.messages")
+
+fail=0
+check() { if [ "$(psql_in -c "$2")" = t ]; then echo "ok   $1"; else echo "FAIL $1"; fail=1; fi; }
+run() { PATH="$T/bin:$PATH" "$T/stack/media-backfill.sh" "$@" > "$T/out.log" 2>&1 || { cat "$T/out.log"; return 1; }; }
+
+run
+if grep -q 'dry run: nothing written' "$T/out.log"; then echo "ok   dry run says so"; else echo "FAIL dry run"; fail=1; fi
+if grep -q 'bytes would leave Postgres' "$T/out.log"; then echo "ok   dry run prints the bytes that would leave"; else echo "FAIL dry run bytes"; cat "$T/out.log"; fail=1; fi
+# 3 candidates (the bad-base64 row is only rejected when decoded), 1 value that is not valid jsonb
+if grep -qP '^3\t4006\t1$' "$T/out.log"; then echo "ok   dry run counts candidates and invalid rows"; else echo "FAIL dry run count"; cat "$T/out.log"; fail=1; fi
+check "dry run changes nothing" \
+  "select md5(string_agg(id::text || coalesce(\"mediaPath\", '') || metadata, ',' order by id)) = '$before' from openwa.messages"
+run --dry-run
+if grep -q 'dry run: nothing written' "$T/out.log"; then echo "ok   --dry-run is the same dry run"; else echo "FAIL --dry-run"; cat "$T/out.log"; fail=1; fi
+
+run --apply --limit 1 --batch 1
+check "--limit 1 moves exactly the oldest row" \
+  "select count(*) = 1 and bool_and(id = '10000000-0000-4000-8000-000000000001') from openwa.messages where \"mediaPath\" like 'chat-media/$S1/%'"
+run --apply # resumes
+grep -E 'moved|skip|done' "$T/out.log" | sed 's/^/     /'
+
+check "image points at its deterministic key" \
+  "select \"mediaPath\" = 'chat-media/$S1/10000000-0000-4000-8000-000000000001.jpg' and \"mediaMimetype\" = 'image/jpeg' from openwa.messages where id = '10000000-0000-4000-8000-000000000001'"
+check "image payload replaced by the omitted marker, other keys kept" \
+  "select metadata::jsonb -> 'media' = '{\"omitted\":true,\"mimetype\":\"image/jpeg\",\"sizeBytes\":3001}'::jsonb and metadata::jsonb ->> 'caption' = 'kept' from openwa.messages where id = '10000000-0000-4000-8000-000000000001'"
+check "voice note (unpadded base64) moved with the right size" \
+  "select \"mediaPath\" = 'chat-media/$S1/10000000-0000-4000-8000-000000000002.ogg' and (metadata::jsonb #>> '{media,sizeBytes}') = '1000' from openwa.messages where id = '10000000-0000-4000-8000-000000000002'"
+check "invalid base64 is kept inline" \
+  "select \"mediaPath\" is null and metadata like '%!!!!%' from openwa.messages where id = '10000000-0000-4000-8000-000000000006'"
+check "URL pointer, archived, revoked, NUL, omitted and non-media rows are untouched" \
+  "select count(*) = 6 from openwa.messages where id in ('10000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000004','10000000-0000-4000-8000-000000000005','10000000-0000-4000-8000-000000000007','10000000-0000-4000-8000-000000000008','10000000-0000-4000-8000-000000000009') and (\"mediaPath\" is null or \"mediaPath\" = 'chat-media/x/already.jpg')"
+
+for pair in "10000000-0000-4000-8000-000000000001.jpg:$T/img.bin" "10000000-0000-4000-8000-000000000002.ogg:$T/voice.bin"; do
+  obj="${pair%%:*}"
+  want="$(sha256sum < "${pair#*:}" | cut -d' ' -f1)"
+  got="$(s3 cat "store:openwa-media/media/chat-media/$S1/$obj" | sha256sum | cut -d' ' -f1)"
+  if [ "$got" = "$want" ]; then echo "ok   stored object $obj is byte-identical"; else echo "FAIL stored object $obj"; fail=1; fi
+done
+backups="$(s3 lsf --recursive store:openwa-backups)"
+if grep -qE '/pre-media-backfill-[0-9TZ]+\.dump$' <<<"$backups"; then echo "ok   pre-run pg_dump is in the backups bucket"; else echo "FAIL backup"; fail=1; fi
+if [ "$(grep -cE '/media-backfill-[0-9TZ]+\.tsv$' <<<"$backups")" -ge 2 ]; then echo "ok   manifests are in the backups bucket"; else echo "FAIL manifest"; fail=1; fi
+
+run --apply
+if grep -q 'done: 0 moved, 1 skipped' "$T/out.log"; then echo "ok   a third run moves nothing (idempotent)"; else echo "FAIL rerun"; cat "$T/out.log"; fail=1; fi
+
+exit "$fail"

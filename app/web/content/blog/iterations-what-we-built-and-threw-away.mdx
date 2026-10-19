@@ -1,0 +1,41 @@
+---
+title: "Iterations — What We Built and Threw Away"
+description: "From the task tracker, CHANGELOG, git log, and vault Decisions: the real history of dead ends, pivots, and the few things that stuck."
+date: 2026-10-18
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [iterations, history, decisions]
+draft: true
+stage: validating
+---
+
+The repository tells the story better than any retrospective.
+
+**OpenWA on OCI Casablanca (October 2026).** The infra workstream started with a simple goal: run OpenWA on an Oracle Cloud Always Free VM in Casablanca, behind Tailscale, with Supabase Postgres in Paris. The first commit (`27817b3`) had the IaC, the compose override, scripts, skills, and docs. The VM launched on the first attempt (`wafine-vm`, A1 2/12, Ubuntu 24.04 arm64).
+
+**Object storage pivots.** First decision: Cloudflare R2 (October 7). Second decision (October 18, captain): OCI Object Storage in the same tenancy — Always Free 20 GB with no additional payment method needed for the existing tenancy, and no `.eu.` endpoint trap. R2 stays a supported option via env flip. The media offload migration (`20261018130000`) and backfill script (`stack/media-backfill.sh`) are written but not applied; the owner must approve the live apply.
+
+**Public hostnames.** The gateway stays private, never public. Production web/API/docs hostnames stay an owner decision until the production zone exists.
+
+**Sign-up and allowlist.** The BFF grew an invite-only allowlist (`allowlisted_numbers`, `user_profiles`, RLS on, Supabase Auth adapter). Migration `20261014120000` pushed, VM env set, BFF redeployed. The web app got real sign-up/login replacing the passphrase stub, and an `/admin` allowlist dashboard. Tests: non-allowlisted refused, allowlisted accepted, non-admin blocked.
+
+**API send budget.** Triggered when Claude's first MCP send failed: "Daily send allowance of 80 reached for a session 2 day(s) old." OpenWA counts the owner's own phone/WhatsApp Web messages as outgoing. The fix: BFF send budget per session (Valkey, UTC day + per-minute), charged only on `/wa` sends, `/mcp` send tools, and auto-replies; refund on engine refusal. Migration `20261016120000_admin_backoffice.sql` added `bff_settings`, `wa_session_limits`, `user_profiles.disabled_at`. Web `/admin` tabs: Send limits, Sessions & usage, Users, Allowlist, Billing/CRM placeholders.
+
+**E2E encryption BFF + Frontend scaffold (PR #7).** Architecture doc `docs/04-e2e-encryption.md` (555 lines). BFF: Hono + oRPC + Bun + Drizzle, hexagonal architecture. Domain layer: ports, entities, value objects, services (EncryptionService, KeyManagementService, BlindIndexService). Web: Next.js 15 + Tailwind, white-labeled. 9 Drizzle migrations. Unit tests: encryption round-trip, AAD binding, blind index determinism.
+
+**Agentic BFF scaffold (hackathon 2026-10-09).** Ports: `IWhatsAppGateway`, `IWebhookVerifier`, `IMcpClientFactory`, `ISkillRegistry`/`ISkillEngine`, `IJobQueue`, `IHealthProbe`. OpenWA REST client + HMAC webhook verifier. MCP client factory + 12-server registry. Skills engine: markdown frontmatter loader + registry + matcher. Queue: `BullMqJobQueue` + `InMemoryJobQueue`. Health: `/health` + `/health/ready`. Verified: `bun run typecheck` 0 errors, `bun run lint` clean, `bun test` 27/27.
+
+**Linux workstation support (PR #2).** Single entry point `scripts/bootstrap.sh` (macOS vs Linux, Homebrew/pacman/apt/dnf + mise/uv). Fixed real bug in `scripts/gh-observer`: BSD-only `date -u -v-2H` behind `2>/dev/null` silently produced empty `since=` on GNU date. `scripts/tailnet-sidecar`: rootless second tailnet (userspace networking + SOCKS5).
+
+**Rebrand to WaFine (PR #38, #83).** daisyUI themes `wafine`/`wafine-dark`, `@wafine/*` package scopes, WAFINE strings, code defaults → wafine hosts. Design system v5: Fredoka 600 headings, Inter body, Noto Sans Arabic, pine/cream/clay palette, three-step elevation, layered depth on landing only.
+
+**What was thrown away or superseded:**
+- `cloud.md` (superseded by the Claude Code project instructions)
+- Supabase Storage for media (→ R2 → OCI Object Storage)
+- Public `gw.` gateway record (gateway stays private)
+- `ai4x.academy` as production zone (→ a dedicated production zone, pending owner decision)
+- Passphrase stub auth (→ real Supabase Auth)
+- `WAFINE` caps casing (→ `WaFine`)
+- Blue palette, `W` monogram (→ pine/cream/clay, bubble mark with وافين)
+- 9 stale local branches, 9 stale remote branches (cleanup 2026-10-08)
+
+The pattern: decide fast, write it down, pivot when the data says so. The vault `Decisions/` folder has one note per owner decision. The captain's proposals are marked proposed. The repo `CHANGELOG.md` tracks what actually landed.

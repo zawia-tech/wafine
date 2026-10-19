@@ -1,0 +1,62 @@
+---
+title: Workflows
+description: Des réponses automatiques rythmées qui répondent à vos contacts avec un délai humain.
+---
+
+Les workflows sont de simples réponses automatiques qui tournent sur votre session. Elles
+répondent aux contacts connus avec du texte fixe, sans IA, à un rythme humain.
+
+## Règles intégrées
+
+| Règle | Quand elle répond | Réponse | Limite |
+|---|---|---|---|
+| Ping | Le message est exactement `ping` | `pong` | aucune |
+| Greeting | Le message est exactement `hello`, `hi`, `salam` ou `bonjour` | Une courte salutation qui annonce qu'une personne vous répondra | Une fois par contact par 24 heures |
+
+La correspondance ignore la casse et un `!`, `.`, `,` ou `?` final. Tout le reste vous
+appartient pour répondre.
+
+## Qui reçoit une réponse
+
+Les workflows ne répondent qu'aux contacts de votre liste autorisée. Ils ne répondent
+jamais à :
+
+- vos propres messages ;
+- les groupes et les statuts ;
+- les messages qui ne sont pas du texte, comme les images ou notes vocales ;
+- les contacts qui ne sont pas sur votre liste autorisée.
+
+## Activer ou désactiver une règle
+
+Toutes les règles démarrent **désactivées**.
+
+1. Ouvrez **Workflows** dans l'application web.
+2. Activez la règle voulue.
+3. Envoyez `ping` depuis un contact autorisé pour vérifier qu'elle répond.
+
+Désactivez la règle de la même façon pour l'arrêter.
+
+## Comment fonctionne le rythme
+
+Les réponses automatiques sont conçues pour ressembler à une personne qui tape, pas à un
+bot :
+
+1. WaFine attend un court délai de « lecture », puis un délai de « frappe » qui grandit avec
+   la longueur de la réponse.
+2. Les réponses d'une session sortent une à une, espacées de quelques secondes.
+3. Chaque contact reçoit au plus deux réponses automatiques par minute, et chaque session
+   au plus six.
+4. Lorsqu'une limite est atteinte, la réponse supplémentaire est **abandonnée**, pas mise en
+   file pour plus tard.
+5. Si WhatsApp ou WaFine signale que la session envoie trop vite, les réponses automatiques
+   se mettent en pause un moment. Une réponse échouée n'est jamais retentée.
+
+Les réponses automatiques comptent aussi contre le quota d'envoi de votre session.
+
+## Bonnes pratiques
+
+- Gardez la règle de salutation pour les contacts qui vous écrivent en premier ; elle ne
+  démarre jamais une conversation.
+- Répondez vous-même aux vraies questions peu après la salutation, comme elle le promet.
+- N'activez pas les règles de réponse automatique propres à OpenWA sur le même numéro si
+  vous auto-hébergez : deux moteurs qui répondent au même message ressemblent à du spam.

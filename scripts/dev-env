@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# Manage a dedicated dev worktree + branch, so local testing never touches `main`.
+#
+# Why: the repo carries live state (stack/.env, *.tfvars) and a pinned submodule,
+# and the operator workspace on main is shared with other sessions. A sibling
+# worktree on its own branch gives the dev environment an isolated working tree,
+# state and HEAD — `scripts/tf` already keys its TF_DATA_DIR by module, and the
+# local docker stack writes to gitignored local/{data,logs,qr}, so dev can apply,
+# build and probe without clobbering main.
+#
+#   scripts/dev-env up            # create ../openwa-oci-infra-dev on mo/dev-local-env
+#   scripts/dev-env path          # print the worktree path
+#   scripts/dev-env branch        # print the branch name
+#   scripts/dev-env shell         # open an interactive shell inside the worktree
+#   scripts/dev-env status        # show worktree + branch + HEAD
+#   scripts/dev-env down          # remove the worktree (branch and commits stay)
+#
+# Overrides: DEV_ENV_NAME (default dev-local-env), DEV_ENV_BRANCH (default mo/<name>),
+# DEV_ENV_DIR (default sibling dir openwa-oci-infra-<name>).
+set -uo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+NAME="${DEV_ENV_NAME:-dev-local-env}"
+BRANCH="${DEV_ENV_BRANCH:-mo/$NAME}"
+MAIN="$(dirname "$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir)")"
+DIR="${DEV_ENV_DIR:-$(dirname "$MAIN")/$(basename "$MAIN")-dev}"
+
+say()   { printf '\n\033[36m%s\033[0m\n' "$*"; }
+die()   { echo "dev-env: $*" >&2; exit 1; }
+
+in_wt() { git -C "$ROOT" worktree list --porcelain | grep -qx "worktree $DIR"; }
+has_branch() { git -C "$ROOT" show-ref --verify --quiet "refs/heads/$BRANCH"; }
+
+cmd_up() {
+  if in_wt; then
+    say "worktree already exists:"
+  elif has_branch; then
+    say "attaching existing branch $BRANCH:"
+    git -C "$ROOT" worktree add "$DIR" "$BRANCH" || die "could not attach $BRANCH"
+  else
+    say "creating branch $BRANCH:"
+    git -C "$ROOT" worktree add -b "$BRANCH" "$DIR" || die "could not create worktree"
+  fi
+  git -C "$DIR" --no-pager status -sb | head -1
+
+  if [ -f "$ROOT/.gitmodules" ] && [ ! -e "$DIR/OpenWA/.git" ]; then
+    say "initialising the OpenWA submodule (needed for 'make local-up' to build):"
+    git -C "$DIR" submodule update --init --depth 1 OpenWA || die "submodule init failed"
+  fi
+
+  echo
+  echo "  dev workspace ready: $DIR  (branch $BRANCH)"
+  echo "  next: cd \"$DIR\"  &&  make local-up       # the free local docker stack"
+  echo "        cd \"$DIR\"  &&  make tf-aws-plan    # stage the billed AWS host"
+}
+
+cmd_down() {
+  if ! in_wt; then
+    die "no worktree at $DIR (nothing to remove)"
+  fi
+  git -C "$ROOT" worktree remove "$DIR" || die "remove refused — commit or stash changes in $DIR first"
+  say "worktree $DIR removed (branch $BRANCH kept)"
+}
+
+cmd_shell() {
+  in_wt || die "worktree not found — run 'scripts/dev-env up' first"
+  echo "  switching to $DIR (branch $BRANCH)"
+  cd "$DIR" || exit 1
+  exec "${SHELL:-/bin/bash}"
+}
+
+cmd_status() {
+  in_wt || die "worktree not found — run 'scripts/dev-env up' first"
+  printf '  path   %s\n' "$DIR"
+  printf '  branch %s\n' "$BRANCH"
+  printf '  head   %s\n' "$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null || echo '?')"
+  printf '  dirty  %s\n' "$(git -C "$DIR" status --porcelain | wc -l | tr -d ' ')"
+}
+
+case "${1:-}" in
+  up)     cmd_up ;;
+  down)   cmd_down ;;
+  shell)  cmd_shell ;;
+  path)   in_wt || die "worktree not found — run 'scripts/dev-env up' first"; echo "$DIR" ;;
+  branch) echo "$BRANCH" ;;
+  status) cmd_status ;;
+  *) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

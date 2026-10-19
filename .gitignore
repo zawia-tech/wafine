@@ -1,0 +1,62 @@
+# secrets
+.env
+*.env
+!*.env.example
+!.env.example
+*.tfvars
+!*.tfvars.example
+*.pem
+*.key
+oci_api_key*
+cloudflared-creds*.json
+
+# terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# runtime data
+stack/data/
+node_modules/
+dist/
+.DS_Store
+Icon?
+supabase/.temp/
+
+# Next.js build output (create-next-app default: .next/, out/, next-env.d.ts)
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Agent/editor tooling
+.obsidian/
+opencode-session-*.md
+
+# Serena: .serena/project.yml is versioned (shared config); cache, memories and
+# the local override are regenerated per workstation.
+.serena/cache/
+.serena/memories/
+.serena/project.local.yml
+
+# local-first test stack (see local/README.md)
+local/data/
+local/logs/
+local/.env.local
+local/qr/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+# repomix context pack (regenerate with `make pack`).
+context/*.md
+repomix-output.xml
+repomix-output.*.xml
+
+# Remotion tutorial video (video/): sources are versioned; build output is not.
+# The only committed renders are app/docs/public/media/wafine-tutorial.{mp4,-poster.png}.
+video/node_modules/
+video/out/
+video/build/
+video/.remotion/

@@ -1,0 +1,38 @@
+name: shell
+
+# No untrusted input reaches any `run:` step: no ${{ }} expressions are used at
+# all. The only data is this repository's own tracked files, so there is no
+# injection surface.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Call the repo's own script rather than re-implementing the check here.
+      # One implementation means CI and a developer workstation cannot disagree.
+      - name: Shell lint
+        run: scripts/lint
+
+      # Hermetic: stubs every external tool, exercises only --dry-run and the
+      # production guard, so it needs no bun/tofu/supabase on the runner.
+      - name: Bootstrap tests
+        run: scripts/bootstrap/test/run-bootstrap-tests.sh
+
+  # graft's wiring graph is structural ($0, no LLM, no API key): this job only
+  # proves the repo still parses and the graph can be built from a clean clone.
+  graft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install -g @nanonets/graft@0.23.0
+      - run: graft build
+      - run: graft check

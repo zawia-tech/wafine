@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+# Reach a SECOND tailnet from a workstation that is already on its own tailnet.
+#
+# Why this exists: one `tailscaled` serves exactly ONE tailnet at a time. `tailscale
+# switch` swaps between logged-in profiles, but only one is ever active — so an
+# operator whose machine is already on a personal tailnet cannot reach `wafine-vm`
+# without dropping their own network.
+#
+# The fix is a second daemon in *userspace networking* mode:
+#   · no TUN device, no routes, no firewall rules -> it cannot fight the primary daemon
+#   · it exposes a local SOCKS5 proxy; traffic for the second tailnet goes through it
+#   · no root needed (it never touches the host network stack)
+#
+# Trade-off: only SOCKS5/HTTP-CONNECT-aware clients can use the second tailnet. That
+# covers curl, ssh (via ProxyCommand), docker, and anything honouring ALL_PROXY — see
+# `scripts/tailnet-sidecar env`.
+#
+#   scripts/tailnet-sidecar start          # launch the sidecar daemon
+#   scripts/tailnet-sidecar login          # print the auth URL to join a tailnet
+#   scripts/tailnet-sidecar status         # sidecar state + tailnet
+#   scripts/tailnet-sidecar env            # export ALL_PROXY for this shell
+#   scripts/tailnet-sidecar ssh-config     # print an ssh_config block for the sidecar tailnet
+#   scripts/tailnet-sidecar stop           # stop the sidecar (primary tailnet untouched)
+#
+# Docs: https://tailscale.com/docs/concepts/userspace-networking
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+. "$ROOT/scripts/lib/os.sh"
+
+SIDE="${TAILNET_SIDECAR_DIR:-$HOME/.local/state/tailnet-sidecar}"
+SOCK="$SIDE/tailscaled.sock"
+PORT="${TAILNET_SIDECAR_PORT:-1055}"
+PIDFILE="$SIDE/sidecar.pid"
+
+ts() { tailscale --socket="$SOCK" "$@"; }
+
+require_tailscaled() {
+  command -v tailscaled >/dev/null 2>&1 || {
+    echo "✗ tailscaled not found — install with: $(install_hint tailscale)" >&2
+    exit 1
+  }
+}
+
+running() {
+  [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null
+}
+
+case "${1:-status}" in
+  start)
+    require_tailscaled
+    if running; then
+      echo "sidecar already running (pid $(cat "$PIDFILE")) on 127.0.0.1:$PORT"
+      exit 0
+    fi
+    mkdir -p "$SIDE"
+    chmod 700 "$SIDE"
+    # --port=0: never try to own UDP 41641; the primary daemon already has it.
+    setsid tailscaled \
+      --tun=userspace-networking \
+      --statedir="$SIDE" --state="$SIDE/tailscaled.state" \
+      --socket="$SOCK" \
+      --socks5-server="localhost:$PORT" \
+      --outbound-http-proxy-listen="localhost:$PORT" \
+      --port=0 \
+      >>"$SIDE/tailscaled.log" 2>&1 &
+    echo $! > "$PIDFILE"
+    sleep 3
+    if running; then
+      echo "✓ sidecar started (pid $(cat "$PIDFILE")) — SOCKS5 on 127.0.0.1:$PORT"
+      echo "  your primary tailnet is untouched: $(tailscale status 2>/dev/null | head -1)"
+    else
+      echo "✗ sidecar failed to start; log:" >&2
+      tail -20 "$SIDE/tailscaled.log" >&2
+      exit 1
+    fi
+    ;;
+
+  login)
+    running || { echo "✗ sidecar not running — run: scripts/tailnet-sidecar start" >&2; exit 1; }
+    echo "→ opening the auth flow. Pick the project tailnet (its name is in the operator vault)."
+    echo "  If your account is not authorised to join it, Tailscale will say so here."
+    echo
+    ts login --hostname="$(hostname)-sidecar" --accept-dns=false
+    ;;
+
+  status)
+    if ! running; then
+      echo "sidecar: stopped"
+      exit 0
+    fi
+    echo "sidecar: running (pid $(cat "$PIDFILE"))"
+    echo "proxy:   127.0.0.1:$PORT"
+    echo
+    echo "--- sidecar tailnet ---"
+    ts status 2>&1 | head -10
+    echo
+    echo "--- primary tailnet (unaffected) ---"
+    tailscale status 2>&1 | head -3
+    ;;
+
+  env)
+    running || { echo "✗ sidecar not running" >&2; exit 1; }
+    # `socks5h` (not `socks5`): the h makes the *sidecar* resolve names, so MagicDNS
+    # names of the sidecar tailnet resolve correctly. Without it, the local resolver
+    # is asked and will not know them.
+    cat <<EOF
+export ALL_PROXY=socks5h://localhost:$PORT
+export HTTPS_PROXY=socks5h://localhost:$PORT
+export HTTP_PROXY=socks5h://localhost:$PORT
+# The tailscale CLI needs the sidecar's socket to talk to the second tailnet:
+alias ts2='tailscale --socket=$SOCK'
+EOF
+    ;;
+
+  ssh-config)
+    running || { echo "✗ sidecar not running" >&2; exit 1; }
+    # NOTE: no backticks in this heredoc — the delimiter is unquoted so $PORT expands,
+    # which means `command` substitution would run too. Plain text only.
+    cat <<EOF
+# Append to ~/.ssh/config, then: ssh wafine-vm-sidecar
+# Needs nc (openbsd-netcat) or socat on PATH.
+Host wafine-vm-sidecar
+    HostName wafine-vm
+    User ubuntu
+    ProxyCommand nc -X 5 -x localhost:$PORT %h %p
+EOF
+    ;;
+
+  stop)
+    if running; then
+      kill "$(cat "$PIDFILE")" 2>/dev/null || true
+      rm -f "$PIDFILE"
+      echo "✓ sidecar stopped — primary tailnet untouched"
+    else
+      echo "sidecar not running"
+    fi
+    ;;
+
+  *)
+    sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+    exit 2
+    ;;
+esac

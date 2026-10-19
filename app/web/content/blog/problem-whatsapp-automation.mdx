@@ -1,0 +1,21 @@
+---
+title: "The Problem — WhatsApp Is Where Work Happens, and the APIs Gatekeep It"
+description: "Official WhatsApp APIs cost too much and gate access; unofficial tools get your number banned. We need a mesh of agents and people, not another SaaS silo."
+date: 2026-10-18
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [problem, whatsapp, morocco, vision]
+draft: true
+stage: magnet
+---
+
+In Morocco, WhatsApp is not a chat app. It is the operating system for small business, for logistics, for the workshop that coordinates with suppliers, for the riad that confirms bookings, for the freelancer who closes deals over voice notes at midnight.
+
+The official WhatsApp Business API exists, but it is priced for enterprise, gated by Meta's partner programme, and tied to a phone number you do not really control. The Cloud API charges per conversation, requires a verified business manager, and still routes through Meta's infrastructure. For a solo artisan in Fes or a growing team in Casablanca, the economics do not work.
+
+Unofficial clients fill the gap — OpenWA, WhatsApp Web JS, Baileys, WPPConnect — but they carry a real risk: your number gets banned. Meta detects automation patterns (burst sends, identical templates, no human-like gaps) and the number is gone. There is no appeal that works in time.
+
+**Vision** — not shipped: a mesh where agents and people coexist on equal terms. A2A (Agent-to-Agent) and ANP (Agent Network Protocol) let your WhatsApp session become a node that other agents can call, with pacing and identity baked in. P2P device sync means the session lives on your hardware, not a cloud relay. Regional hubs by city (Casablanca, Rabat, Marrakech, Tangier) keep latency low and data sovereignty real. This is the direction, not the current product.
+
+Today WaFine is a gateway you host or we host for you. It paces every auto-reply behind a configurable gap and a daily cap per session. It exposes one REST API and one MCP endpoint so your scripts and Claude both reach the same session. It is invite-only, built in Morocco, open-core on OpenWA.
+
+The problem is real. The official path is closed. The unofficial path is dangerous. We are building a third way — paced, scoped, honest about the risk.

@@ -1,0 +1,43 @@
+---
+title: Changelog
+description: What has changed in WaFine during the current alpha release.
+---
+
+WaFine is in an early **alpha** (v0.1.2-alpha, October 2026). This page summarises the
+notable changes for people using the hosted service. Expect everything below to keep
+evolving; data and accounts can be reset while the service is in alpha.
+
+## Added in this release
+
+- **Docs site in three languages.** These pages: English (root), French (`/fr/...`) and
+  Arabic (`/ar/...`), including a full tutorial and a three-language video.
+- **An end-to-end tutorial** with a narrated video in English, French and Arabic, taking
+  you from invite to Claude connected to your number.
+- **Account settings.** Change your profile, email and password, review your sessions and
+  request account closure.
+- **A messages inbox.** Read your chats from the web app; media opens through a fresh
+  private link on every view.
+- **Sign-up in French and Arabic,** not only English.
+- **Admin tools for the operators.** Waitlist management, roles and permissions, and
+  per-session send limits for the people who run the service.
+
+## Changed in this release
+
+- **Media storage** moved to a private object store with **short-lived signed links** —
+  no media file has a public URL any more.
+- **The Claude connector now uses OAuth.** You sign in through WaFine instead of pasting
+  an API key; disconnecting the app cuts the connection at once.
+- **One send budget everywhere.** REST sends, MCP sends by Claude and automatic replies
+  share the same per-session daily and per-minute budget, with refunds when the engine
+  refuses a send.
+
+## Security work in this release
+
+- API keys are stored only as hashes and scoped to one session, at most five active per
+  account.
+- OAuth tokens are opaque, stored hashed, bound to one connection, with refresh rotation.
+- Accounts can be disabled by the operators: keys and connectors stop working at once.
+- Hardened internal crypto plus rate limits on registration, sign-in and every API route.
+
+Where this page and reality disagree, reality wins: tell us what you hit and we will fix
+this summary too.

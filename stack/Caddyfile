@@ -1,0 +1,19 @@
+# Fallback public entry point for the BFF — docs/15-launch-checklist.md, option B.
+#
+# This file is only served when the `caddy` compose profile is enabled, which
+# ./stack/wa does when CADDY_API_HOST is set in stack/.env (empty by default).
+# That deliberately opens inbound 80 and 443 on the VM — the one documented
+# exception to the zero-inbound-port rule — so it needs the owner's approval.
+# Option A (Cloudflare for SaaS through the tunnel) opens no port and is the
+# default path; reach for this file only if option A cannot be used.
+#
+# Caddy substitutes {$CADDY_API_HOST} from the container's environment at parse
+# time (docker compose passes it through in stack/compose.infra.yml). Caddy then
+# issues a real Let's Encrypt certificate for exactly that hostname, over
+# the ports published in stack/compose.infra.yml, and proxies to the BFF on the
+# compose network. An empty value leaves the site block empty and Caddy refuses
+# to start, which is the intended loud failure.
+{$CADDY_API_HOST} {
+	encode gzip
+	reverse_proxy openwa-bff:4000
+}

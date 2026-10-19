@@ -1,0 +1,1 @@
+ALTER TABLE "waitlist" ADD COLUMN "status" text DEFAULT 'pending' NOT NULL;

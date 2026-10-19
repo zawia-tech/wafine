@@ -1,0 +1,127 @@
+---
+title: "Setup — Deploy WaFine to Your Own Server (OCI Casablanca, Supabase, Cloudflare Tunnel)"
+description: "The one-command bootstrap, Terraform modules, and deploy script to run WaFine on your own infrastructure — VM in Casablanca, database in Paris, tunnel to the world."
+date: 2026-10-19
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [setup, deploy, oci, supabase, cloudflare, self-host]
+draft: true
+stage: educate
+---
+
+## Prerequisites
+
+- Oracle Cloud account (home region `af-casablanca-1` for Always Free A1)
+- Supabase account (Free org, project in `eu-west-3`)
+- Cloudflare account (for Tunnel, DNS, Access)
+- Tailscale account (tailnet for private access)
+- `git`, `bun`, `docker` + `docker compose`, `tofu` (or `terraform`), `gh`, `supabase` CLI, `vercel` CLI
+- `pass` (optional, for secrets), `tailscale` CLI (optional)
+
+Install the toolchain once:
+```bash
+./scripts/bootstrap.sh --check        # reports what is missing
+./scripts/bootstrap.sh                # installs what is missing (detects macOS vs Linux)
+```
+
+## 1. Authenticate (interactive, not automated)
+
+```bash
+# Oracle
+oci setup bootstrap           # choose region af-casablanca-1, sign in browser
+# → ~/.oci/config + API key uploaded to your OCI user
+
+# Tailscale
+open Tailscale app → log in   # this machine joins the tailnet
+
+# Supabase
+supabase login                # CLI token
+
+# Cloudflare
+# dashboard → API Tokens → create token with Tunnel:Edit, DNS:Edit
+# → goes in terraform/cloudflare/terraform.tfvars
+```
+
+## 2. Tailscale tailnet settings (admin console)
+
+1. **DNS** → enable MagicDNS and **HTTPS certificates** (needed for `tailscale serve`).
+2. **Access controls** → add `tag:server` policy.
+3. **Settings → Keys** → generate auth key: one-off, pre-approved, tags `tag:server`, expiry 1 day.
+   → put in `terraform/oci/terraform.tfvars`.
+
+## 3. Supabase (Free org + project)
+
+1. Dashboard → **New organization**, plan **Free**.
+2. Create project `openwa-ma` in **eu-west-3**.
+3. Apply migration `supabase/migrations/20261007120000_openwa_datastore.sql`.
+4. Generate the `openwa` role password, then set it in SQL editor (never in git or chat):
+   ```bash
+   openssl rand -base64 36
+   ```
+   ```sql
+   alter role openwa with login password 'PASTE_GENERATED_PASSWORD_HERE';
+   ```
+5. Collect for `stack/.env`:
+   - Session pooler host (Connect → Session pooler)
+   - Project ref
+   - Database → SSL → download CA as `stack/certs/supabase-ca.crt`
+   - Object storage: **OCI Object Storage** (Always Free 20 GB, same tenancy) — see `docs/11-media-storage.md`. Cloudflare R2 (EU) stays supported via env flip.
+
+**Important:** Free plan pauses after 7 days of inactivity. The nightly GitHub workflow (`.github/workflows/nightly-health.yml`, 02:17 UTC) writes a health snapshot to keep it awake. Set secret `SUPABASE_DB_URL` in GitHub.
+
+## 4. OCI VM
+
+```bash
+cd terraform/oci
+cp terraform.tfvars.example terraform.tfvars    # tenancy_ocid, compartment_ocid, ssh key, tailscale key
+cd ../.. && scripts/oci-a1-retry.sh 120          # shows plan, asks, retries on "Out of host capacity"
+```
+
+After ~3 minutes the VM `wafine-vm` appears in `tailscale status`. Verify:
+```bash
+ssh ubuntu@wafine-vm cat /opt/wa/.provisioned
+```
+
+## 5. First deploy
+
+```bash
+ssh ubuntu@wafine-vm 'mkdir -p /opt/wa/stack/certs'
+scp stack/certs/supabase-ca.crt ubuntu@wafine-vm:/opt/wa/stack/certs/
+scp stack/.env.example ubuntu@wafine-vm:/opt/wa/stack/.env
+ssh ubuntu@wafine-vm                                # edit /opt/wa/stack/.env with Supabase values; leave CLOUDFLARE_TUNNEL_TOKEN empty
+scripts/deploy.sh                                 # rsync → preflight → build (≈10–15 min on A1) → up → backup cron → tailscale serve → gateway-key --check
+ssh ubuntu@wafine-vm /opt/wa/stack/wa apikey        # store the admin key in your password manager
+```
+
+If the final check prints `FAIL gateway rejected the OPENWA_API_KEY`:
+```bash
+./stack/gateway-key.sh && ./stack/wa up -d bff
+```
+
+Open `https://wafine-vm.<your-tailnet>.ts.net` and log in with the key. Then set `BASE_URL`, `DASHBOARD_URL`, `CORS_ORIGINS` in `.env` to that URL and run `./stack/wa up -d`.
+
+## 6. Link a WhatsApp number
+
+Use a **dedicated, warmed-up number**, never your main business line (see `OpenWA/README.md`, "Before you connect a number").
+
+Dashboard → Sessions → New → Start → scan the QR from WhatsApp → Linked devices.
+
+## 7. Public hostnames (production)
+
+Pick a domain you control. A Cloudflare zone with a tunnel is the simplest path; a registrar-held zone works too but needs more care. In this guide's setup, the playground zone already has a tunnel while the production zone is still to be decided:
+
+- **(a) Move `<your-domain>` to Cloudflare.** Export records, recreate in Cloudflare as DNS-only, switch nameservers, add production hosts.
+- **(b) Keep nameservers at the registrar.** Vercel works for web/docs, but the BFF needs its own listener (Caddy on VM + public 443 port). This reopens an inbound port — plan the ingress rule deliberately.
+
+The gateway stays **private and never public** (`gateway_public = false`).
+
+## 8. Verify
+
+```bash
+make check                    # shellcheck clean
+cd app/bff && bun run typecheck && bun run lint && bun test
+cd ../web && bun run typecheck && bun run lint && bun test && bun run build
+```
+
+---
+
+**Credits:** WaFine, sponsored by Ai4x Academy, built by ZawIA.Tech, open-core on OpenWA.

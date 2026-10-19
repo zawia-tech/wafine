@@ -1,0 +1,13 @@
+{
+  "locale": "fr",
+  "lines": [
+    { "scene": "brand", "text": "Voici WaFine : votre WhatsApp, avec une IA." },
+    { "scene": "invite", "text": "D'abord, demandez une invitation avec votre e-mail et votre numéro." },
+    { "scene": "qr", "text": "Ensuite, scannez le QR de WaFine depuis WhatsApp, dans Appareils connectés." },
+    { "scene": "key", "text": "Créez une clé API. Elle ne s'affiche qu'une fois : gardez-la." },
+    { "scene": "curl", "text": "Envoyez un premier message en une requête. Écrivez-vous, pour essayer." },
+    { "scene": "replies", "text": "Les réponses automatiques prennent leur temps : votre numéro reste humain." },
+    { "scene": "mcp", "text": "Enfin, ajoutez WaFine à Claude comme connecteur personnalisé." },
+    { "scene": "outro", "text": "C'est tout. À bientôt sur la liste d'attente." }
+  ]
+}

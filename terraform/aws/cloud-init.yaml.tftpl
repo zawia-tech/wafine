@@ -1,0 +1,67 @@
+#cloud-config
+# Rendered by Terraform templatefile(). Literal dollar-braces must be $${...}.
+# AWS counterpart of terraform/oci/cloud-init.yaml.tftpl. Differences are
+# deliberate and marked below.
+hostname: ${hostname}
+package_update: true
+package_upgrade: true
+packages:
+  - ca-certificates
+  - curl
+  - jq
+  - age            # optional encryption of backups (stack/backup.sh)
+  - rsync
+  - unattended-upgrades
+  - unzip
+
+write_files:
+  - path: /etc/docker/daemon.json
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": { "max-size": "10m", "max-file": "5" },
+        "live-restore": true
+      }
+
+  # DIFFERENCE FROM OCI: no Tailscale sysctl block. This host does not join a
+  # tailnet — it is reached with SSM Session Manager instead. Adding
+  # net.ipv4.ip_forward here would only widen the blast radius for no benefit.
+
+  - path: /opt/wa/README-provisioning.txt
+    content: |
+      Provisioned by terraform/aws (OpenWA staging).
+
+      This host has NO inbound ports. Shell access is SSM Session Manager:
+
+        aws ssm start-session --target $(terraform output -raw instance_id)
+
+      The stack is driven by ./stack/wa exactly as on OCI. See terraform/aws/README.md.
+
+runcmd:
+  # Docker Engine + compose plugin (official convenience script, arm64 + amd64)
+  - curl -fsSL https://get.docker.com | sh
+  - usermod -aG docker ubuntu
+  - systemctl enable --now docker
+
+  # SSM agent ships preinstalled on the Canonical Ubuntu 24.04 AMI, but its
+  # state is not guaranteed across AMI revisions — assert it rather than assume.
+  # Without this the host is unreachable and the only recourse is a console
+  # reboot, so a failed start is logged loudly.
+  - |
+    if snap list amazon-ssm-agent >/dev/null 2>&1; then
+      snap start amazon-ssm-agent || true
+      systemctl enable --now snap.amazon-ssm-agent.amazon-ssm-agent.service || true
+    else
+      echo "WARNING: amazon-ssm-agent not present; installing via snap" >&2
+      snap install amazon-ssm-agent --classic || true
+      snap start amazon-ssm-agent || true
+    fi
+
+%{ if enable_cw ~}
+  # CloudWatch agent: makes the box observable without a shell, which is the
+  # reason this environment exists. Configured for logs + basic metrics only.
+  - snap install amazon-cloudwatch-agent --classic || true
+%{ endif ~}
+
+  - install -d -o ubuntu -g ubuntu /opt/wa
+  - echo "cloud-init done $(date -Is)" > /opt/wa/.provisioned

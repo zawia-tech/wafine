@@ -1,0 +1,683 @@
+{
+  "common": {
+    "skipToContent": "Aller au contenu principal",
+    "byline": "par Zawia",
+    "language": "Langue",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "logout": "Se déconnecter",
+    "themeToLight": "Passer au thème clair",
+    "themeToDark": "Passer au thème sombre",
+    "copy": "Copier",
+    "copied": "Copié",
+    "copyLabel": "Copier : {label}"
+  },
+  "nav": {
+    "main": "Navigation principale",
+    "how": "Comment ça marche",
+    "connector": "Connecteur Claude",
+    "waitlist": "Liste d'attente",
+    "docs": "Documentation",
+    "blog": "Blog",
+    "signin": "Se connecter"
+  },
+  "metadata": {
+    "title": "WaFine — passerelle WhatsApp pour les équipes",
+    "titleTemplate": "%s · WaFine",
+    "description": "Connectez un numéro WhatsApp, créez des réponses automatiques rythmées et exposez-le à vos applications et agents via une seule API REST et MCP. Par Zawia."
+  },
+  "hero": {
+    "eyebrow": "Sur invitation · Conçu au Maroc",
+    "h1": "Votre WhatsApp, au travail quand vous ne l'êtes pas.",
+    "subhead": "Connectez votre numéro, créez des réponses automatiques rythmées et branchez-le sur Claude et vos propres applications via une seule API REST et un seul endpoint MCP. Votre session reste sur notre propre serveur.",
+    "primaryCta": "Rejoindre la liste d'attente",
+    "secondaryCta": "Lire la documentation",
+    "thread": {
+      "label": "réponse auto · rythmée",
+      "messages": [
+        {
+          "side": "in",
+          "text": "Bonjour ! Vous avez un créneau libre demain matin ?",
+          "time": "10:41"
+        },
+        {
+          "side": "out",
+          "text": "Oui — 10h00 et 11h30 sont libres. Lequel vous convient ?",
+          "time": "10:41"
+        },
+        {
+          "side": "in",
+          "text": "10h00 est parfait, merci !",
+          "time": "10:42"
+        },
+        {
+          "side": "out",
+          "text": "C’est réservé pour demain à 10h00. À demain.",
+          "time": "10:42"
+        }
+      ]
+    },
+    "caption": "Conversation avec réponses automatiques rythmées via WaFine."
+  },
+  "howTo": {
+    "eyebrow": "Comment ça marche",
+    "heading": "Trois étapes, aucune réécriture",
+    "intro": "WaFine s'installe entre WhatsApp et vos outils. Vous gardez le téléphone ; nous gérons la session, la file d'attente et la surface d'API.",
+    "steps": [
+      {
+        "title": "Connectez votre numéro",
+        "body": "Scannez une fois un code QR depuis WhatsApp Web. La session est stockée chiffrée sur notre serveur à Casablanca — pas sur un portable qui se met en veille."
+      },
+      {
+        "title": "Écrivez des réponses automatiques rythmées",
+        "body": "Un webhook à l'entrée, un workflow à la sortie. Chaque réponse passe par un expéditeur rythmé : un intervalle configurable entre les messages, un plafond quotidien, et pas de tempêtes de nouvelles tentatives."
+      },
+      {
+        "title": "Appelez-le depuis n'importe où",
+        "body": "Créez une clé API par session et parlez à l'API REST, ou ajoutez l'endpoint MCP à Claude et utilisez votre numéro en langage naturel."
+      }
+    ]
+  },
+  "connector": {
+    "eyebrow": "Connecteur Claude",
+    "heading": "Ajouter WaFine à Claude",
+    "body": "WaFine parle OAuth, donc Claude ne voit jamais votre clé API. Ajoutez le connecteur, connectez-vous, examinez l'écran de consentement et appuyez sur Autoriser — nous créons une clé limitée à votre propre session, que vous pouvez révoquer à tout moment.",
+    "steps": {
+      "connect": "Dans Claude : Paramètres → Connecteurs → Ajouter un connecteur personnalisé.",
+      "paste": "Collez {connectorUrl} comme URL du connecteur et appuyez sur Connecter.",
+      "signIn": "Connectez-vous avec votre compte WaFine, vérifiez ce que Claude peut faire, puis appuyez sur Autoriser."
+    },
+    "urlFieldLabel": "URL du connecteur",
+    "snippetHeading": "Ou depuis un terminal avec Claude Code",
+    "snippetFieldLabel": "Commande Claude Code",
+    "snippet": "claude mcp add --transport http whatsapp {connectorUrl}",
+    "consentNote": "L'écran de consentement est explicite : Claude peut lire vos chats, messages, contacts et groupes, et envoyer des messages depuis votre numéro — via votre session uniquement. Révoquez la clé et l'accès s'arrête immédiatement.",
+    "docsLabel": "Lire le guide du connecteur"
+  },
+  "features": {
+    "eyebrow": "Ce que vous obtenez",
+    "heading": "Conçu pour un numéro qui ne peut pas se permettre d'avoir l'air d'un bot",
+    "items": [
+      {
+        "title": "Envoi rythmé",
+        "body": "Chaque message sortant passe par un seul expéditeur avec un intervalle configurable et un plafond quotidien. Pas de rafales, pas de tempêtes de nouvelles tentatives, un seul chemin pour le texte rédigé par l'IA comme pour les réponses manuelles."
+      },
+      {
+        "title": "Clés API par session",
+        "body": "Créez une clé par session WhatsApp, voyez seulement son préfixe, révoquez-la en un clic. Un numéro ou cinq : ils ne partagent jamais leurs identifiants."
+      },
+      {
+        "title": "API REST et MCP",
+        "body": "La même session répond en JSON sur REST et en appels d'outils sur MCP : Claude, vos scripts et vos outils internes parlent tous au même endpoint."
+      },
+      {
+        "title": "Liaison QR dans le navigateur",
+        "body": "Liez et reliez votre numéro depuis l'application web — code QR scanné, session active. Pas de commandes docker, pas de shell sur le serveur."
+      },
+      {
+        "title": "Résidence des données : le Maroc et l'UE",
+        "body": "La passerelle tourne sur notre propre VM à Casablanca ; la base de données vit dans la région parisienne de Supabase. Les données de session WhatsApp ne quittent jamais le serveur."
+      },
+      {
+        "title": "Open-core, sur OpenWA",
+        "body": "Construit sur le moteur open source OpenWA, en public avec la communauté Ai4x Academy. Lisez la documentation, hébergez-le vous-même, ou laissez-nous le faire pour vous."
+      }
+    ],
+    "cta": "Lire la documentation"
+  },
+  "waitlist": {
+    "eyebrow": "Liste d'attente",
+    "heading": "Rejoindre la liste d'attente",
+    "intro": "WaFine est sur invitation pendant que nous grandissons prudemment. Laissez votre adresse e-mail et nous enverrons un message quand votre invitation sera prête — pas de newsletters, pas de partage.",
+    "fields": {
+      "email": {
+        "label": "E-mail",
+        "hint": "C'est à cette adresse que nous envoyons votre invitation."
+      },
+      "waNumber": {
+        "label": "Numéro WhatsApp (optionnel)",
+        "hint": "Format international, p. ex. +212 6XX XX XX XX."
+      },
+      "useCase": {
+        "label": "Que voudriez-vous automatiser ? (optionnel)",
+        "hint": "Une ou deux lignes suffisent — cela nous aide à prioriser."
+      },
+      "locale": {
+        "label": "Langue préférée",
+        "hint": "La langue dans laquelle nous devons écrire votre invitation."
+      }
+    },
+    "localeOptions": {
+      "en": "English",
+      "fr": "Français",
+      "ar": "العربية"
+    },
+    "submit": "Rejoindre la liste d'attente",
+    "submitting": "Inscription…",
+    "success": "Vous êtes sur la liste. Nous vous écrirons quand votre invitation sera prête.",
+    "error": "Une erreur s'est produite. Réessayez dans un instant.",
+    "privacyNote": "Nous utilisons votre e-mail pour l'invitation et des tags de campagne agrégés pour comprendre ce qui vous a amené ici."
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "heading": "Les questions que se posent les gens avant de s'inscrire",
+    "items": [
+      {
+        "q": "Est-ce que mon numéro peut être banni ?",
+        "a": "Oui — toute automatisation WhatsApp comporte ce risque, et aucune passerelle ne peut en promettre l'inverse. WaFine le réduit : chaque envoi est rythmé avec un intervalle configurable et un plafond quotidien, il n'y a pas de nouvelles tentatives automatiques, et un seul expéditeur concentre tout le trafic sortant. N'écrivez qu'aux personnes qui vous ont contacté en premier, et commencez doucement."
+      },
+      {
+        "q": "Qui peut s'inscrire ?",
+        "a": "L'accès est sur invitation. Rejoignez la liste d'attente et un administrateur invite les numéros que nous sommes prêts à faire tourner. L'inscription accepte ensuite uniquement ce numéro invité, au format international, et lie le compte à celui-ci."
+      },
+      {
+        "q": "Où sont mes données, et où en est la CNDP ?",
+        "a": "La session WhatsApp tourne sur notre propre VM à Casablanca et la base de données de l'application est dans la région parisienne de Supabase : vos données restent au Maroc et dans l'UE. Le contenu des messages est stocké chiffré, pas en texte lisible, et nous suivons les attentes de la loi marocaine 09-08 pour les données personnelles."
+      },
+      {
+        "q": "Quels numéros puis-je connecter ?",
+        "a": "Tout numéro qui a déjà WhatsApp, personnel ou professionnel — un numéro par session, un nombre illimité de sessions sur votre compte. Les lignes fixes et les numéros sans WhatsApp ne peuvent pas être liés."
+      },
+      {
+        "q": "Puis-je auto-héberger à la place ?",
+        "a": "Oui. WaFine est open-core sur OpenWA : le dépôt livre la stack compose, le BFF et l'application web, et la documentation couvre un déploiement complet. Vous apportez un serveur, un domaine et une base de données ; nous faisons tourner la version hébergée si vous préférez."
+      },
+      {
+        "q": "Que se passe-t-il si ma session tombe ?",
+        "a": "Rien n'est supprimé. Lorsque le téléphone perd WhatsApp Web, la session se met en pause : les appels REST et MCP renvoient une erreur claire de type « pas prête » au lieu d'échouer silencieusement, et vous reliez à nouveau en scannant un nouveau code QR depuis l'application web."
+      }
+    ]
+  },
+  "footer": {
+    "credit": "WaFine, sponsorisé par Ai4x Academy, construit par ZawIA.Tech, open-core sur OpenWA.",
+    "columns": {
+      "product": "Produit",
+      "resources": "Ressources",
+      "legal": "Légal"
+    },
+    "labels": {
+      "how": "Comment ça marche",
+      "connector": "Connecteur Claude",
+      "waitlist": "Liste d'attente",
+      "docs": "Documentation",
+      "blog": "Blog",
+      "contact": "Contact",
+      "brand": "Marque",
+      "authors": "Auteurs",
+      "privacy": "Confidentialité",
+      "terms": "Conditions"
+    },
+    "copyright": "© 2026 Zawia",
+    "disclaimer": "WaFine est une passerelle indépendante et non officielle. Elle n'est ni affiliée à WhatsApp LLC ou Meta Platforms, Inc., ni autorisée ou approuvée par elles. WhatsApp est une marque de WhatsApp LLC. Claude est une marque d'Anthropic, PBC."
+  },
+  "brand": {
+    "title": "Charte et ressources de marque",
+    "eyebrow": "Identité · Directives · Ressources",
+    "lead": "Directives officielles, logos, palette de couleurs et ressources pour WaFine.",
+    "intro": {
+      "heading": "À propos de WaFine",
+      "body": "WaFine est une passerelle WhatsApp open-core pour les équipes, basée sur OpenWA. WaFine est développée par Mohamed Moughamir dans le cadre de l'initiative communautaire Zawia.tech.",
+      "community": "Apprenez l'IA sur ai4x.academy et rejoignez la communauté sur Zawia.tech."
+    },
+    "naming": {
+      "heading": "Nom et orthographe",
+      "latinScript": "Écriture latine",
+      "arabicScript": "Écriture arabe",
+      "productName": "WaFine",
+      "arabicName": "وافين",
+      "darijaNote": "Expression en darija pour « où es-tu / quoi de neuf »",
+      "rules": "Écrivez toujours WaFine avec un W et un F majuscules. En arabe, écrivez وافين. N'écrivez jamais WAFINE, wafine ou Wa-Fine.",
+      "unofficial": "WaFine fonctionne sur des clients non officiels (OpenWA) et n'est pas affilié à WhatsApp ou Meta. N'utilisez jamais des termes comme « WhatsApp Business API », « Works with WhatsApp » ou « Propulsé par WhatsApp »."
+    },
+    "logos": {
+      "heading": "Logo et symbole",
+      "subhead": "Le symbole WaFine est une bulle de discussion arrondie portant le mot-symbole arabe وافين.",
+      "downloadSvg": "Copier le SVG",
+      "copied": "Copié !",
+      "markLabel": "Symbole bulle",
+      "invertedLabel": "Symbole inversé (surfaces sombres)",
+      "smallIconLabel": "Icône d'onglet / favicon (sans lettre en dessous de 48px)",
+      "fullMarkSvgLabel": "SVG marque complète WaFine",
+      "bubbleOnlySvgLabel": "SVG bulle seule WaFine (< 48px)",
+      "rules": "Le lettrage arabe est le tracé Noto Kufi Arabic Black mis en forme par HarfBuzz, utilisé tel quel. Ne redessinez pas, ne ressaisissez pas et ne retournez pas le texte arabe. Ne teintez jamais le logo avec le vert WhatsApp (#25d366)."
+    },
+    "colors": {
+      "heading": "Palette de couleurs",
+      "subhead": "Palette marocaine chaleureuse inspirée du papier, du pin et d'accents d'argile.",
+      "pine": "Pin (Primaire)",
+      "pineDesc": "Actions principales, boutons prioritaires et remplissage du symbole.",
+      "paper": "Papier chaud (Fond)",
+      "paperDesc": "Surface d'arrière-plan de base pour le mode clair.",
+      "clay": "Argile / Terre cuite (Secondaire)",
+      "clayDesc": "Accent chaleureux pour les surtitres, badges et mises en valeur.",
+      "sand": "Sable (Surface)",
+      "sandDesc": "Sections marketing et cartes en alternance.",
+      "ink": "Encre sombre (Neutre)",
+      "inkDesc": "Arrière-plans des bandeaux sombres, pieds de page et éléments inversés."
+    },
+    "typography": {
+      "heading": "Typographie",
+      "fredoka": "Fredoka 600",
+      "fredokaDesc": "Police d'affichage arrondie pour les titres, cartes et accroches.",
+      "inter": "Inter",
+      "interDesc": "Sans-serif épurée pour le corps du texte, les conseils et les données.",
+      "noto": "Noto Sans Arabic",
+      "notoDesc": "Typographie arabe associée à Fredoka et Inter."
+    },
+    "voice": {
+      "heading": "Voix et ton",
+      "principles": "Direct, honnête et un peu sobre. Nous expliquons ce que le produit fait et ce qu'il ne peut pas promettre. Nous rappelons que l'automatisation comporte des risques inhérents à la plateforme et que l'envoi rythmé de WaFine réduit le risque, sans jamais prétendre à une immunité totale contre les blocages."
+    },
+    "disclaimer": {
+      "heading": "Marques et mentions légales",
+      "body": "WaFine est un projet indépendant et non officiel. Il n'est pas affilié, autorisé, maintenu ou approuvé par WhatsApp LLC, Meta Platforms, Inc. ou Anthropic, PBC. WhatsApp est une marque déposée de WhatsApp LLC.",
+      "contact": "Pour toute demande de presse ou concernant la marque, contactez-nous à {contactEmail}."
+    }
+  },
+  "authors": {
+    "eyebrow": "Équipe",
+    "title": "Auteurs",
+    "lead": "Les personnes qui construisent, rédigent et maintiennent WaFine.",
+    "author": {
+      "name": "Mohamed Moughamir",
+      "role": "Fondateur et mainteneur, WaFine",
+      "bio1": "Construit WaFine, une passerelle WhatsApp open-core basée sur OpenWA.",
+      "bio2": "Dans le cadre de l'initiative communautaire Zawia.tech.",
+      "github": "Profil GitHub",
+      "zawia": "Zawia.tech"
+    },
+    "community": {
+      "heading": "Communauté",
+      "zawia": "Initiative communautaire Zawia.tech",
+      "academy": "Apprendre l'IA sur ai4x.academy"
+    }
+  },
+  "legal": {
+    "updatedLabel": "Dernière mise à jour",
+    "updated": "17 octobre 2026",
+    "privacy": {
+      "title": "Confidentialité",
+      "lead": "Ceci est un point de départ, pas un conseil juridique, et il sera relu avant le lancement. Il décrit ce que WaFine fait de vos données aujourd'hui.",
+      "sections": {
+        "collect": {
+          "heading": "Ce que nous collectons",
+          "body": "L'e-mail du compte, le numéro WhatsApp que vous liez, vos discussions WhatsApp, messages, contacts et groupes, ainsi que les clés API et les sessions que vous créez. Entrées de la liste d'attente : l'e-mail, le numéro et la note facultatifs que vous soumettez, ainsi que les tags de parrainage et de campagne UTM facultatifs de l'URL de la page d'accueil ; nous les utilisons sous forme agrégée et sans cookies de suivi."
+        },
+        "where": {
+          "heading": "Où elles résident",
+          "body": "La session WhatsApp et ses données locales restent sur notre propre serveur à Casablanca. La base de données de l'application est dans la région parisienne de Supabase. Le contenu des messages est stocké chiffré, pas en texte lisible."
+        },
+        "never": {
+          "heading": "Ce que nous ne faisons jamais",
+          "body": "Nous ne vendons pas vos données, nous n'entraînons pas de modèles sur vos messages et nous ne confions pas votre session à un autre compte. Les médias et les sauvegardes sont stockés chiffrés."
+        },
+        "choices": {
+          "heading": "Vos choix",
+          "body": "Vous pouvez révoquer des clés API et déconnecter une session depuis l'application web à tout moment. Pour supprimer votre compte et ses données, contactez-nous à {contactEmail}."
+        }
+      }
+    },
+    "terms": {
+      "title": "Conditions",
+      "lead": "Ceci est un point de départ, pas un conseil juridique, et il sera relu avant le lancement. Il décrit les règles d'utilisation de WaFine aujourd'hui.",
+      "sections": {
+        "account": {
+          "heading": "Votre compte",
+          "body": "WaFine est sur invitation et lié à un numéro WhatsApp par session. Gardez vos clés API secrètes ; tout ce qui est envoyé avec elles est traité comme venant de vous."
+        },
+        "use": {
+          "heading": "Usage acceptable",
+          "body": "N'utilisez WaFine que pour des numéros qui vous appartiennent et des personnes qui s'attendent à avoir de vos nouvelles. L'envoi de messages non sollicités en masse, le spam et tout ce qui enfreint les conditions d'usage de WhatsApp ne sont pas autorisés et mettront fin à votre accès."
+        },
+        "warranty": {
+          "heading": "Aucune garantie",
+          "body": "WaFine est fourni en l'état, à un stade précoce, sans garantie. WhatsApp peut modifier ou restreindre le comportement de l'appareil lié dont dépend votre numéro, et votre numéro reste soumis aux règles propres de WhatsApp."
+        },
+        "changes": {
+          "heading": "Modifications",
+          "body": "Nous pouvons mettre à jour ces conditions au fil de l'évolution du produit. Les changements importants seront annoncés dans l'application avant d'entrer en vigueur."
+        }
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion à WaFine",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "submitting": "Connexion en cours…",
+      "failed": "Échec de la connexion",
+      "invited": "Invité ?",
+      "createAccount": "Créer votre compte",
+      "forgot": "Mot de passe oublié ?"
+    },
+    "signup": {
+      "title": "Créer votre compte",
+      "createdTitle": "Compte créé",
+      "confirm": "Vérifiez votre boîte de réception et confirmez votre e-mail, puis connectez-vous.",
+      "noConfirm": "Vous pouvez vous connecter maintenant.",
+      "goToLogin": "Aller à la connexion",
+      "intro": "L'accès est par invitation. Utilisez le numéro WhatsApp avec lequel vous avez été invité — c'est le numéro que vous connecterez.",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "passwordHint": "Au moins 8 caractères.",
+      "phone": "Numéro WhatsApp",
+      "phoneHint": "Le numéro avec lequel vous avez été invité, au format international.",
+      "submit": "S'inscrire",
+      "submitting": "Création…",
+      "failed": "Échec de l'inscription",
+      "haveAccount": "Vous avez déjà un compte ?",
+      "login": "Se connecter"
+    },
+    "errors": {
+      "generic": "Une erreur est survenue. Réessayez dans un instant.",
+      "network_error": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+      "invalid_input": "Vérifiez les informations saisies : une adresse e-mail valide et un mot de passe d'au moins 8 caractères.",
+      "invalid_phone": "Saisissez le numéro WhatsApp au format international, par exemple +212 6XX XX XX XX.",
+      "not_invited": "Ce numéro n'a pas été invité. Demandez à l'administrateur de l'ajouter à la liste d'accès.",
+      "phone_taken": "Ce numéro a déjà un compte. Connectez-vous plutôt.",
+      "email_taken": "Un compte existe déjà avec cette adresse e-mail. Connectez-vous plutôt.",
+      "weak_password": "Ce mot de passe est trop faible. Choisissez-en un plus long et moins courant.",
+      "rate_limited": "Trop de tentatives. Patientez quelques minutes, puis réessayez.",
+      "invalid_credentials": "Adresse e-mail ou mot de passe incorrect.",
+      "email_not_confirmed": "Confirmez d'abord votre adresse e-mail (vérifiez votre boîte de réception).",
+      "session_expired": "Votre session a expiré. Reconnectez-vous.",
+      "wrong_password": "Le mot de passe actuel est incorrect.",
+      "same_password": "Choisissez un mot de passe différent de l’actuel.",
+      "invalid_email": "Saisissez une adresse e-mail valide.",
+      "reset_link_invalid": "Ce lien de réinitialisation a expiré ou a déjà servi. Demandez-en un nouveau.",
+      "bootstrap_owner": "Ce compte propriétaire est défini dans la configuration du serveur et ne peut pas être modifié ici."
+    },
+    "forgot": {
+      "title": "Réinitialiser le mot de passe",
+      "intro": "Saisissez l’e-mail de votre compte. S’il existe, nous vous envoyons un lien pour choisir un nouveau mot de passe.",
+      "email": "E-mail",
+      "submit": "Envoyer le lien",
+      "submitting": "Envoi…",
+      "sentTitle": "Consultez votre boîte de réception",
+      "sent": "Si un compte utilise {email}, un lien de réinitialisation est en route. Cela peut prendre quelques minutes ; vérifiez aussi les spams.",
+      "backToLogin": "Retour à la connexion"
+    },
+    "reset": {
+      "title": "Choisir un nouveau mot de passe",
+      "password": "Nouveau mot de passe",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "hint": "Au moins 8 caractères.",
+      "submit": "Enregistrer le mot de passe",
+      "submitting": "Enregistrement…",
+      "doneTitle": "Mot de passe modifié",
+      "done": "Votre mot de passe est modifié. Connectez-vous avec le nouveau.",
+      "invalidLink": "Ce lien de réinitialisation n’est pas valide ou a expiré.",
+      "askAgain": "Demander un nouveau lien",
+      "goToLogin": "Aller à la connexion"
+    }
+  },
+  "messagesPage": {
+    "title": "Messages",
+    "subtitle": "Vos conversations WhatsApp",
+    "chats": "Conversations",
+    "conversation": "Conversation",
+    "chooseChat": "Choisissez une conversation pour lire les messages.",
+    "loadingChats": "Chargement des conversations…",
+    "loadingMessages": "Chargement de la conversation…",
+    "emptyChats": "Aucune conversation pour le moment.",
+    "emptyMessages": "Aucun message dans cette conversation.",
+    "loadOlder": "Charger les anciens messages",
+    "loadingOlder": "Chargement…",
+    "mediaPlaceholder": "Pièce jointe : {type}",
+    "view": "Voir",
+    "error": "Impossible de charger les messages",
+    "retry": "Réessayer",
+    "unread": "{count} non lus",
+    "noPreview": "Aucun message pour le moment",
+    "mediaError": "Impossible d'ouvrir la pièce jointe. Réessayez."
+  },
+  "appNav": {
+    "admin": "Admin",
+    "whatsapp": "WhatsApp",
+    "messages": "Messages",
+    "settings": "Paramètres"
+  },
+  "whatsappPage": {
+    "title": "WhatsApp",
+    "loading": "Chargement…",
+    "loadFailed": "Impossible de charger votre session WhatsApp.",
+    "requestFailed": "La requête a échoué. Réessayez.",
+    "status": {
+      "created": "Créée, démarrage…",
+      "initializing": "Démarrage du moteur WhatsApp…",
+      "qr_ready": "Scannez le QR code avec WhatsApp",
+      "authenticating": "Association en cours…",
+      "ready": "Connectée",
+      "disconnected": "Déconnectée",
+      "action_required": "Action requise",
+      "failed": "Échec",
+      "phone_mismatch": "Mauvais numéro associé"
+    },
+    "session": "Session",
+    "linkPrompt": "Associez votre numéro invité {phone} pour commencer à envoyer et recevoir des messages.",
+    "createSession": "Créer la session",
+    "linkedNumber": "Numéro associé",
+    "qrAlt": "QR code WhatsApp",
+    "waitingQr": "En attente du QR code…",
+    "qrSteps": "Sur votre téléphone : WhatsApp → Paramètres → Appareils connectés → Connecter un appareil. Utilisez le numéro invité {phone}. Le code se renouvelle automatiquement.",
+    "startAgain": "Relancer",
+    "unlink": "Dissocier l'appareil",
+    "deleteSession": "Supprimer la session",
+    "deleteConfirm": "Supprimer cette session et révoquer toutes ses clés API ? Vous devrez scanner un nouveau QR code.",
+    "apiKeys": "Clés API",
+    "apiKeysIntro": "Une clé ne fonctionne que pour cette session. Elle n'est affichée qu'une fois : conservez-la dans un gestionnaire de mots de passe.",
+    "newKey": "Nouvelle clé (copiez-la maintenant, elle ne sera plus affichée)",
+    "apiKey": "Clé API",
+    "generateKey": "Générer une clé API",
+    "maxKeys": "Révoquez-en une pour en générer une autre (max. {max}).",
+    "key": "Clé",
+    "created": "Créée le",
+    "actions": "Actions",
+    "revoked": "révoquée",
+    "revoke": "Révoquer",
+    "createdAt": "Créée le {date}",
+    "claudeTitle": "Ajouter à Claude",
+    "claudeIntro": "Utilisez votre WhatsApp depuis Claude (claude.ai, Desktop, mobile). Aucune clé API nécessaire : vous vous connectez ici et vous autorisez.",
+    "claudeStep1": "Dans Claude : Paramètres → Connecteurs → Ajouter un connecteur personnalisé.",
+    "claudeStep2": "Nommez-le WhatsApp et collez l'URL ci-dessous. Laissez les champs OAuth vides.",
+    "claudeStep3": "Cliquez sur Connecter, connectez-vous ici si on vous le demande, puis autorisez.",
+    "connectorUrl": "URL du connecteur",
+    "connectedApps": "Applications connectées",
+    "noApps": "Aucune pour l'instant.",
+    "appConnected": "connectée le {date}",
+    "appLastUsed": "dernière utilisation le {date}",
+    "disconnect": "Déconnecter",
+    "connectTitle": "Connexion",
+    "sessionId": "ID de session",
+    "restBase": "URL de base REST (en-tête X-API-Key)",
+    "mcpEndpoint": "Point de terminaison MCP (Streamable HTTP, en-tête X-API-Key)",
+    "sendRest": "Envoyer un message (REST)",
+    "otherMcp": "Autres clients MCP (clé API)",
+    "genericMcp": "Configuration d'un client MCP générique",
+    "banWarning": "Les agents peuvent lire les discussions et envoyer des messages depuis ce numéro. Gardez des volumes faibles et un rythme humain : les envois en masse ou à froid font bannir les numéros."
+  },
+  "admin": {
+    "tabs": {
+      "limits": "Limites d'envoi",
+      "sessions": "Sessions et usage",
+      "users": "Utilisateurs",
+      "allowlist": "Liste d'autorisation",
+      "waitlist": "Liste d'attente",
+      "billing": "Facturation",
+      "crm": "CRM"
+    },
+    "waitlist": {
+      "title": "Liste d'attente",
+      "intro": "Les personnes qui ont demandé une invitation depuis la page d'accueil. Inviter un contact ajoute son numéro à la liste d'autorisation pour qu'il puisse s'inscrire — aucun message n'est envoyé.",
+      "statusFilterLabel": "Statut",
+      "statusAll": "Tous",
+      "statusPending": "En attente",
+      "statusInvited": "Invité",
+      "statusRejected": "Refusé",
+      "statusRemoved": "Retiré",
+      "searchLabel": "Rechercher",
+      "searchPlaceholder": "E-mail ou numéro WhatsApp",
+      "emptySearch": "Aucune demande correspondante.",
+      "selectedCount": "{count} sélectionné(s)",
+      "selectPending": "Sélectionner les demandes en attente de cette page",
+      "selectEmail": "Sélectionner {email}",
+      "bulkApprove": "Approuver la sélection",
+      "bulkReject": "Refuser la sélection",
+      "colEmail": "E-mail",
+      "colPhone": "Numéro WhatsApp",
+      "colRequested": "Demande",
+      "colStatus": "Statut",
+      "colAction": "Action",
+      "empty": "Aucune demande pour l'instant.",
+      "emptyFiltered": "Aucune demande avec ce statut.",
+      "loading": "Chargement…",
+      "loadFailed": "Échec du chargement",
+      "requestFailed": "Échec de la requête",
+      "invite": "Inviter",
+      "reject": "Refuser",
+      "reopen": "Rouvrir",
+      "remove": "Retirer",
+      "removeQuestion": "Retirer {email} des demandes actives ?",
+      "confirmRemove": "Retirer la demande",
+      "details": "Détails",
+      "requestedAt": "Demandée",
+      "invitedAt": "Invitée",
+      "removedAt": "Retirée",
+      "useCase": "Cas d'usage",
+      "notAvailable": "Non renseigné",
+      "history": "Historique des statuts",
+      "noHistory": "Aucun changement de statut enregistré.",
+      "adminId": "Admin",
+      "eventInvited": "Approuvée",
+      "eventRejected": "Refusée",
+      "eventRemoved": "Retirée",
+      "eventReopened": "Rouverte",
+      "close": "Fermer",
+      "inviting": "Invitation…",
+      "invited": "Invité",
+      "inviteAria": "Inviter {email}",
+      "phoneLabel": "Numéro WhatsApp de {email}",
+      "phonePlaceholder": "+212 6XX XX XX XX",
+      "phoneMissing": "Ce contact n'a laissé aucun numéro — ajoutez-en un au format international pour l'inviter.",
+      "phoneInvalid": "Utilisez le format international, ex. +212 6XX XX XX XX.",
+      "page": "Page {page} sur {pages}",
+      "count": "{count, plural, =0 {aucune demande} one {# demande} other {# demandes}}",
+      "sourceCountsTitle": "Inscriptions par source",
+      "source": "Tag",
+      "sourceValue": "Valeur",
+      "sourceTotal": "Total",
+      "sourceLast7Days": "7 derniers jours",
+      "sourceRef": "Parrainage",
+      "utmSource": "Source UTM",
+      "utmCampaign": "Campagne UTM",
+      "previous": "Précédent",
+      "next": "Suivant"
+    },
+    "forbidden": {
+      "title": "Pas d'accès admin",
+      "body": "Votre compte n'a pas de rôle d'administration. Demandez l'accès à un propriétaire.",
+      "back": "Retour aux messages"
+    },
+    "roles": {
+      "owner": "Propriétaire",
+      "admin": "Admin",
+      "support": "Support",
+      "viewer": "Lecteur",
+      "user": "Utilisateur",
+      "label": "Rôle de {email}",
+      "bootstrap": "Propriétaire défini par ADMIN_EMAILS : non modifiable ici",
+      "history": "Historique des rôles",
+      "noHistory": "Aucun changement de rôle enregistré.",
+      "column": "Rôle",
+      "showHistory": "Voir l'historique",
+      "hideHistory": "Masquer l'historique",
+      "by": "par {email}"
+    },
+    "closure": {
+      "badge": "Fermeture demandée",
+      "since": "Fermeture demandée le {date}"
+    }
+  },
+  "og": {
+    "home": {
+      "title": "Faites de votre numéro WhatsApp un coéquipier IA.",
+      "subtitle": "Connectez votre numéro, créez des réponses automatiques rythmées et branchez-le sur Claude et vos applications via une seule API REST et MCP. Sur invitation. Conçu au Maroc.",
+      "badge": "Open-core · Construit sur OpenWA",
+      "alt": "WaFine — Faites de votre numéro WhatsApp un coéquipier IA."
+    },
+    "login": {
+      "eyebrow": "Connexion",
+      "title": "Connectez-vous à WaFine",
+      "subtitle": "Accès sur invitation pour la communauté Zawia Tech et les équipes invitées.",
+      "alt": "Connectez-vous à WaFine — accès sur invitation."
+    },
+    "signup": {
+      "eyebrow": "Inscription",
+      "title": "Créez votre compte WaFine",
+      "subtitle": "L'accès est par invitation — inscrivez-vous avec l'e-mail et le numéro WhatsApp avec lesquels vous avez été invité.",
+      "alt": "Créez votre compte WaFine — accès par invitation."
+    }
+  },
+  "settingsPage": {
+    "title": "Paramètres du compte",
+    "loading": "Chargement…",
+    "loadFailed": "Impossible de charger votre compte. Réessayez dans un instant.",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré.",
+    "profile": {
+      "title": "Profil",
+      "displayName": "Nom affiché",
+      "displayNameHint": "Affiché dans l’en-tête à la place de votre e-mail. Laissez vide pour afficher l’e-mail."
+    },
+    "email": {
+      "title": "E-mail",
+      "current": "E-mail actuel",
+      "new": "Nouvel e-mail",
+      "submit": "Changer d’e-mail",
+      "checkInbox": "Consultez votre boîte {email} et cliquez sur le lien de confirmation. L’e-mail ne change qu’après confirmation."
+    },
+    "password": {
+      "title": "Mot de passe",
+      "current": "Mot de passe actuel",
+      "new": "Nouveau mot de passe",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "hint": "Au moins 8 caractères.",
+      "submit": "Changer le mot de passe",
+      "changed": "Mot de passe modifié. Les autres appareils restent connectés jusqu’à ce que vous les déconnectiez ci-dessous."
+    },
+    "whatsapp": {
+      "title": "Numéro WhatsApp",
+      "none": "Aucun numéro lié pour l’instant.",
+      "readOnly": "Pour changer ce numéro, contactez un administrateur."
+    },
+    "sessions": {
+      "title": "Sessions",
+      "intro": "Vous déconnecte sur tous les appareils et navigateurs, y compris celui-ci.",
+      "submit": "Se déconnecter de tous les appareils",
+      "confirm": "Se déconnecter partout ?"
+    },
+    "closure": {
+      "title": "Fermer le compte",
+      "intro": "Demandez la fermeture de votre compte. Il est désactivé tout de suite et un administrateur examine la demande. Vos données sont conservées, rien n’est supprimé.",
+      "submit": "Demander la fermeture du compte",
+      "confirm": "Désactiver votre compte et envoyer la demande ?",
+      "confirmYes": "Oui, demander la fermeture",
+      "requested": "Fermeture demandée le {date}. Un administrateur va l’examiner."
+    },
+    "cancel": "Annuler",
+    "errors": {
+      "nameTooLong": "80 caractères au maximum.",
+      "nameInvalid": "Le nom contient des caractères non autorisés.",
+      "emailInvalid": "Saisissez une adresse e-mail valide.",
+      "emailSame": "C’est déjà votre e-mail.",
+      "passwordTooShort": "Au moins 8 caractères.",
+      "passwordTooLong": "128 caractères au maximum.",
+      "passwordMismatch": "Les deux mots de passe ne correspondent pas.",
+      "passwordSame": "Choisissez un mot de passe différent de l’actuel.",
+      "currentRequired": "Saisissez votre mot de passe actuel."
+    }
+  }
+}

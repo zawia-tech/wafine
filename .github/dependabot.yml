@@ -1,0 +1,33 @@
+version: 2
+updates:
+  - package-ecosystem: "bun"
+    directories:
+      - "/app/web"
+      - "/app/bff"
+      - "/app/docs"
+    schedule:
+      interval: "weekly"
+    # Held until after the 20/10/2026 launch (owner decision 18/10/2026): these are 0.x
+    # packages, so a "minor" bump can break the API (drizzle-orm 0.36 -> 0.45 is the BFF's
+    # database layer). Remove this block after launch and upgrade the three in one tested PR.
+    ignore:
+      - dependency-name: "drizzle-orm"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "drizzle-kit"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "@hono/zod-validator"
+        update-types: ["version-update:semver-minor"]
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"

@@ -1,0 +1,8 @@
+.vercel
+.env*
+
+# Playwright (e2e journey, see playwright.config.ts)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

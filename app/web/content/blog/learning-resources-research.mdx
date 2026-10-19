@@ -1,0 +1,43 @@
+---
+title: "Learning Resources and Research — A2A, ANP, MCP, WhatsApp Automation Risk"
+description: "Curated reading on Agent-to-Agent, Agent Network Protocol, Model Context Protocol, and WhatsApp automation risk — with real links only."
+date: 2026-10-18
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [resources, research, a2a, anp, mcp, whatsapp]
+draft: true
+stage: conversion
+---
+
+## Agent-to-Agent (A2A) and Agent Network Protocol (ANP)
+
+- **A2A Protocol Specification** — <https://github.com/a2a-protocol/A2A> — The core protocol for agent-to-agent communication. JSON-RPC 2.0 over HTTP, task lifecycle, artifacts, streaming.
+- **ANP (Agent Network Protocol)** — <https://github.com/agent-network-protocol/ANP> — Decentralized agent discovery and communication. DID-based identity, P2P transport options.
+- **A2A JavaScript SDK** — <https://www.npmjs.com/package/@a2a-js/sdk> — Client and server helpers for TypeScript/Node.
+## Model Context Protocol (MCP)
+
+- **MCP Specification** — <https://modelcontextprotocol.io/specification/2025-06-18> — Tools, resources, prompts, sampling. OAuth 2.1 authorization for remote servers.
+- **MCP TypeScript SDK** — <https://www.npmjs.com/package/@modelcontextprotocol/sdk> — Official SDK for clients and servers.
+- **Claude Connector Requirements** — <https://claude.com/docs/connectors/building/authentication> — OAuth 2.1, DCR, PKCE S256, allowed redirect URIs.
+- **Our MCP implementation** — `docs/10-claude-connector.md` — BFF as OAuth 2.1 authorization server, opaque tokens, sealed engine keys, refresh rotation.
+
+## WhatsApp Automation Risk
+
+- **OpenWA** — <https://github.com/rmyndharis/OpenWA> — The engine WaFine builds on. MIT license. Arm64 Chromium, docker-proxy optional, `POSTGRES_SCHEMA` support.
+- **WhatsApp Business API (Official)** — <https://developers.facebook.com/docs/whatsapp> — Cloud API pricing, conversation categories, template approval, partner programme.
+- **WhatsApp Automation Ban Patterns** — No single authoritative source. Community knowledge: burst sends, identical templates, no human-like gaps, new number + high volume = high ban risk. WaFine's pacing (gap + daily cap) reduces risk; does not remove it.
+- **Moroccan Law 09-08 / CNDP** — <https://www.cndp.ma/> — Personal data protection. International transfer to Paris (Supabase eu-west-3) is a transfer under 09-08 (risk R10). We describe where data lives; we do not certify compliance.
+
+## Our Research and Decisions
+
+- `docs/04-e2e-encryption.md` (555 lines) — E2E encryption design for BFF. XChaCha20-Poly1305, HMAC blind index, Argon2id KDF. Was a design on 2026-10-08; check implementation status.
+- `docs/08-signup-allowlist.md` — Invite-only sign-up, allowlist, admin dashboard. Supabase Auth adapter, RLS on owner tables.
+- `docs/09-sessions-keys-mcp.md` — Session management, API keys (scoped, shown once, up to 5 active), MCP endpoint, pacing details.
+- `docs/11-media-storage.md` — OCI Object Storage (Always Free 20 GB, same tenancy), provider-neutral S3 config, batched idempotent backfill, lifecycle policy.
+## WhatsApp Web / Unofficial Clients Landscape
+
+- **Baileys** — <https://github.com/WhiskeySockets/Baileys> — TypeScript, multi-device, active maintenance.
+- **WhatsApp Web JS** — <https://github.com/pedroslopez/whatsapp-web.js> — Puppeteer-based, widely used.
+- **WPPConnect** — <https://github.com/wppconnect-team/wppconnect> — Node.js, enterprise features.
+- **go-whatsapp** — <https://github.com/Rhymen/go-whatsapp> — Go implementation.
+
+**Rule for this post:** Real links only. No hostnames hardcoded (use placeholders). No invented numbers, customers, quotes, or partnerships. A2A, ANP, P2P, and city hubs are Vision / Planned — not shipped.

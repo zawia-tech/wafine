@@ -1,0 +1,205 @@
+# Layered on top of the UNMODIFIED upstream file OpenWA/docker-compose.yml:
+#
+#   docker compose -p openwa --env-file stack/.env \
+#     -f OpenWA/docker-compose.yml -f stack/compose.infra.yml <cmd>
+#
+# Always go through ./stack/wa, which builds that command line for you.
+# Relative paths below resolve against the FIRST file's directory (OpenWA/), hence ../stack/...
+#
+# What this adds/changes:
+#   * openwa-api is built from the OpenWA source checkout (upstream Dockerfile) and tagged locally
+#   * Supabase is the datastore -> the docker-socket proxy (built-in datastore orchestration) is off
+#   * Supabase's Postgres CA is trusted so DATABASE_SSL_REJECT_UNAUTHORIZED can stay true
+#   * cloudflared publishes the API/dashboard on our own hostname; no inbound port on the VM.
+#     It is in the `public` profile: ./stack/wa enables it only when CLOUDFLARE_TUNNEL_TOKEN is set,
+#     so the stack runs Tailscale-only until DNS for the public hostname is ready.
+#   * caddy (profile `caddy`, OFF by default) is the fallback public API entry point for the
+#     registrar-DNS option: it opens inbound 80/443, so it needs the owner's approval (docs/15).
+#   * Redis (Valkey) for BFF queue/cache
+#   * BFF (Agentic core) - Bun/Hono service on port 4000
+
+services:
+  docker-proxy:
+    # Upstream docs: "If you don't use the built-in datastore orchestration ... disable this service
+    # entirely". openwa-api's depends_on on it is `required: false`, so this is supported.
+    profiles: ['disabled']
+
+  openwa-api:
+    image: openwa-local:${OPENWA_REF:-main}
+    mem_limit: ${OPENWA_MEM_LIMIT:-8g}
+    environment:
+      - NODE_EXTRA_CA_CERTS=/run/certs/supabase-ca.crt
+    volumes:
+      - ../stack/certs/supabase-ca.crt:/run/certs/supabase-ca.crt:ro
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.8.1
+    container_name: openwa-cloudflared
+    profiles: ['public']
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --metrics 0.0.0.0:20241 run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:-}
+    networks:
+      - openwa-network
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - 'no-new-privileges:true'
+    depends_on:
+      openwa-api:
+        condition: service_healthy
+    healthcheck:
+      # Distroless image: no shell, so use the binary's own readiness probe (exit 0 = edge connected).
+      test: ['CMD', 'cloudflared', 'tunnel', '--metrics', '127.0.0.1:20241', 'ready']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Fallback public entry point for the BFF (docs/15-launch-checklist.md, option B).
+  # Terminates TLS for CADDY_API_HOST with a real Let's Encrypt certificate and proxies to
+  # the BFF. OFF by default (profile `caddy`): ./stack/wa enables it only when
+  # CADDY_API_HOST is set in stack/.env, and even then it is a deliberate exception to the
+  # zero-inbound-port hard constraint — it publishes 80/443 on every interface, so it needs
+  # the owner's approval before use. The default path (option A) is Cloudflare for SaaS
+  # through the tunnel, which opens no port at all.
+  caddy:
+    image: caddy:2-alpine
+    container_name: openwa-caddy
+    profiles: ['caddy']
+    restart: unless-stopped
+    environment:
+      # Empty leaves the Caddyfile's {$CADDY_API_HOST} block empty, which Caddy refuses to
+      # parse: the container exits loudly instead of serving the wrong host.
+      - CADDY_API_HOST=${CADDY_API_HOST:-}
+    # The only published ports in this file, on purpose: Caddy is the public entry point.
+    # Do not add this profile to the default stack; ask the owner first.
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ../stack/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - openwa-network
+    depends_on:
+      bff:
+        condition: service_started
+    healthcheck:
+      # Alpine image ships the caddy binary only; validate re-checks the rendered Caddyfile.
+      test: ['CMD', 'caddy', 'validate', '--config', '/etc/caddy/Caddyfile']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  redis:
+    # Upstream also defines `redis` (redis:7-alpine) but gates it behind profiles: ['redis','full'],
+    # and stack/wa never enables those — so the merged service was inactive and bff.depends_on.redis
+    # failed with "depends on undefined service" (invalid project, BFF could not start at all).
+    # !reset drops upstream's profile list so this service is always active, as the BFF requires.
+    profiles: !reset []
+    image: valkey/valkey:8-alpine
+    container_name: openwa-redis
+    restart: unless-stopped
+    # noeviction, not allkeys-lru: BullMQ keeps job state in Redis and must never have keys evicted
+    # (it warns at startup otherwise). At the 1gb cap writes fail loudly instead of dropping jobs.
+    command: valkey-server --maxmemory 1gb --maxmemory-policy noeviction --save 60 1 --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - openwa-network
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  bff:
+    build:
+      context: ../app/bff
+      dockerfile: Dockerfile
+    image: bff-local:${BFF_REF:-main}
+    container_name: openwa-bff
+    restart: unless-stopped
+    # Do NOT publish this on 0.0.0.0: the tunnel's api ingress rule reaches it as http://openwa-bff:4000
+    # over the compose network (see terraform/cloudflare ingress). A bare "4000:4000" binds the
+    # host's public interface and breaks the repo's zero-inbound hard constraint. Loopback-only,
+    # matching how openwa-api publishes its own port.
+    ports:
+      - '127.0.0.1:4000:4000'
+    environment:
+      # Forwarded so the BFF's production fail-fast actually runs (env.ts gates on NODE_ENV).
+      - NODE_ENV=${NODE_ENV:-production}
+      - REDIS_URL=redis://openwa-redis:6379
+      - QUEUE_CONCURRENCY=5
+      - QUEUE_MAX_RETRIES=3
+      - QUEUE_BACKOFF_MS=5000
+      - MCP_READONLY=${BFF_MCP_READONLY:-true} # BFF: read-only by default. Set BFF_MCP_READONLY=false only if user agents must send via the BFF /mcp (captain decision 2026-10-14). OpenWA engine MCP is controlled by stack/.env (MCP_READONLY for openwa-api).
+      - OPENWA_BASE_URL=http://openwa-api:2785
+      # Written into stack/.env by ./stack/gateway-key.sh, never committed or printed.
+      - OPENWA_API_KEY=${OPENWA_API_KEY:-}
+      # Not CORS_ORIGINS: that name in stack/.env belongs to OpenWA (the gateway's own origin).
+      - CORS_ORIGINS=${BFF_CORS_ORIGINS:-}
+      # Sign-up / allowlist + admin dashboard (docs/08-signup-allowlist.md). Values live only in
+      # stack/.env on the VM; empty in production makes the BFF refuse to start and name the var.
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
+      - DATABASE_URL=${DATABASE_URL:-}
+      # CA mounted below: pins TLS to Supabase instead of the ssl:'require' fallback.
+      - DATABASE_CA_FILE=${DATABASE_CA_FILE:-/run/certs/supabase-ca.crt}
+      - ADMIN_EMAILS=${ADMIN_EMAILS:-}
+      - ALLOWLIST_SEED=${ALLOWLIST_SEED:-}
+      # OAuth for MCP connectors (Claude), docs/10-claude-connector.md. OAUTH_ENC_KEY lives only in stack/.env.
+      - OAUTH_ENC_KEY=${OAUTH_ENC_KEY:-}
+      - WEB_URL=${WEB_URL:?WEB_URL is required (public web origin)}
+      - PUBLIC_API_URL=${PUBLIC_API_URL:?PUBLIC_API_URL is required (public BFF origin)}
+      # API send budget defaults (admins override them from /admin): counts only sends made through
+      # the BFF, never what the number's owner types on the phone or WhatsApp Web.
+      - API_SEND_DAILY_LIMIT=${API_SEND_DAILY_LIMIT:-300}
+      - API_SEND_PER_MINUTE=${API_SEND_PER_MINUTE:-10}
+      # Presigned links into the private media bucket (docs/11-media-storage.md): the same bucket,
+      # prefix and object-store key OpenWA uses, so nothing is duplicated in stack/.env.
+      # Empty endpoint/keys = links are off. S3_FORCE_PATH_STYLE=true for OCI Object Storage.
+      - S3_ENDPOINT=${S3_ENDPOINT:-}
+      - S3_REGION=${S3_REGION:-auto}
+      - S3_FORCE_PATH_STYLE=${S3_FORCE_PATH_STYLE:-true}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID:-}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY:-}
+      - S3_BUCKET_MEDIA=${S3_BUCKET:-openwa-media}
+      - S3_KEY_PREFIX=${S3_KEY_PREFIX:-media/}
+      - MEDIA_URL_TTL_SECONDS=${MEDIA_URL_TTL_SECONDS:-300}
+    volumes:
+      - ../stack/certs/supabase-ca.crt:/run/certs/supabase-ca.crt:ro
+    networks:
+      - openwa-network
+    depends_on:
+      redis:
+        condition: service_healthy
+      openwa-api:
+        condition: service_healthy
+    # No healthcheck here on purpose: the image's own HEALTHCHECK (app/bff/Dockerfile) applies.
+    # The old override used `curl`, which oven/bun:*-alpine does not ship, so the container
+    # never left `starting`. Liveness is /health; readiness (gateway + key + queue) is /health/ready.
+
+networks:
+  openwa-network:
+    # Pinned so TRUSTED_PROXIES can name it: cloudflared reaches openwa-api from this subnet and
+    # forwards the visitor's X-Forwarded-For, which OpenWA uses for per-IP rate limits.
+    ipam:
+      config:
+        - subnet: 172.31.42.0/24
+
+volumes:
+  redis-data:
+    driver: local
+  # Let's Encrypt certificates and Caddy's runtime config for the optional caddy profile.
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local

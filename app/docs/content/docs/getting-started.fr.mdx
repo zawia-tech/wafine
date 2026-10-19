@@ -1,0 +1,70 @@
+---
+title: Premiers pas
+description: Demandez une invitation, créez votre compte, liez WhatsApp par QR code et faites votre premier appel API.
+---
+
+Cette page vous emmène d'une demande d'invitation à votre premier message envoyé via l'API.
+Comptez environ dix minutes.
+
+## Avant de commencer
+
+- Un compte WhatsApp sur un téléphone que vous contrôlez. Un numéro dédié est fortement
+  recommandé ; voir [Utiliser WhatsApp](/fr/using-whatsapp).
+- Une adresse e-mail que vous pouvez consulter, pour confirmer votre compte.
+- Un terminal avec `curl`, pour le premier appel API.
+
+## 1. Demandez une invitation
+
+WaFine est réservé aux invités. Rejoignez la liste d'attente depuis le site WaFine avec votre
+e-mail et, en option, le numéro WhatsApp que vous comptez utiliser et une courte note sur
+votre cas d'usage. Lorsque votre invitation est approuvée, ce numéro est ajouté à la liste
+autorisée.
+
+## 2. Créez votre compte avec le numéro invité
+
+1. Ouvrez l'application web WaFine et choisissez **Sign up** (inscription).
+2. Saisissez votre e-mail, un mot de passe et le numéro WhatsApp invité au format
+   international, par exemple `+212 6XX XX XX XX`.
+3. Confirmez votre e-mail via le lien reçu, puis connectez-vous.
+
+L'inscription est refusée si le numéro n'est pas sur la liste autorisée, ou s'il est déjà
+utilisé par un autre compte.
+
+## 3. Liez WhatsApp par QR code
+
+1. Dans l'application web, ouvrez **WhatsApp** et créez votre session.
+2. Un QR code apparaît. Sur votre téléphone, ouvrez WhatsApp, allez dans **Appareils
+   connectés**, choisissez **Associer un appareil** et scannez le code.
+3. Attendez que la session apparaisse comme connectée.
+
+Le numéro lié doit être celui avec lequel vous vous êtes inscrit. Si vous scannez avec un
+autre numéro, WaFine déconnecte cet appareil et la session signale une incompatibilité de
+téléphone.
+
+## 4. Créez une clé API
+
+1. Sur la page **WhatsApp**, créez une clé API.
+2. Copiez-la immédiatement. Elle n'est affichée qu'une fois ; rangez-la dans un coffre à mots
+   de passe.
+
+La même page affiche votre **ID de session**, l'**URL de base REST** et le **endpoint MCP**.
+
+## 5. Envoyez votre premier message
+
+Remplacez les espaces réservés par vos valeurs. L'ID de conversation est le numéro du
+destinataire au format international sans `+` ni espaces, suivi de `@c.us`.
+
+```bash
+curl -X POST "https://api.example.com/wa/sessions/<session-id>/messages/send-text" \
+  -H "X-API-Key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"chatId":"2126XXXXXXXX@c.us","text":"Hello from WaFine"}'
+```
+
+Commencez par vous écrire à vous-même ou à quelqu'un qui attend votre message.
+
+## Prochaines étapes
+
+- [Clés API et sessions](/fr/api-keys-and-sessions) : lire les conversations et gérer les clés.
+- [MCP et Claude](/fr/mcp-and-claude) : connecter Claude à votre numéro.
+- [Workflows](/fr/workflows) : activer les réponses automatiques rythmées.

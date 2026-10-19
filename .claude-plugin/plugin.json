@@ -1,0 +1,24 @@
+{
+  "name": "wafine",
+  "version": "1.0.0",
+  "description": "WAFINE WhatsApp agentic workflows - deploy, onboard, send messages, and connect to Claude",
+  "author": {
+    "name": "ZawIA.Tech",
+    "url": "https://zawia.tech"
+  },
+  "homepage": "https://github.com/zawia-tech/wafine",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zawia-tech/wafine"
+  },
+  "keywords": [
+    "wafine",
+    "whatsapp",
+    "mcp",
+    "openwa",
+    "deploy",
+    "onboarding"
+  ],
+  "skills": "./skills"
+}

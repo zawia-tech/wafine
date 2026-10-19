@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# docker compose for this deployment: upstream OpenWA compose + our infra override + stack/.env.
+# Runs on the VM from /opt/wa (any cwd). Everything after `wa` is passed to docker compose:
+#   ./stack/wa build            # build openwa-api from OpenWA/Dockerfile (source checkout)
+#   ./stack/wa up -d
+#   ./stack/wa ps | logs -f openwa-api | restart openwa-api | down
+# Extra helpers:
+#   ./stack/wa apikey           # print the bootstrap admin key once (store it, then delete the file)
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+[ -f "$ROOT/stack/.env" ] || { echo "missing $ROOT/stack/.env — copy stack/.env.example and fill it in" >&2; exit 1; }
+[ -f "$ROOT/stack/certs/supabase-ca.crt" ] || { echo "missing stack/certs/supabase-ca.crt — see stack/certs/README.md" >&2; exit 1; }
+
+# cloudflared (profile `public`) only runs once a tunnel token exists; until then: Tailscale-only.
+# caddy (profile `caddy`) is the fallback public API entry point and only runs once an API
+# hostname is configured; it opens inbound 80/443, so it is off by default (docs/15, option B).
+PROFILES=()
+grep -qE '^CLOUDFLARE_TUNNEL_TOKEN=.+' "$ROOT/stack/.env" && PROFILES+=(--profile public)
+grep -qE '^CADDY_API_HOST=.+' "$ROOT/stack/.env" && PROFILES+=(--profile caddy)
+
+compose() {
+  docker compose -p openwa --env-file "$ROOT/stack/.env" ${PROFILES[@]+"${PROFILES[@]}"} \
+    -f "$ROOT/OpenWA/docker-compose.yml" -f "$ROOT/stack/compose.infra.yml" "$@"
+}
+
+case "${1:-}" in
+  apikey) exec docker exec -u openwa openwa-api cat /app/data/.api-key ;;
+  "")     compose ps ;;
+  *)      compose "$@" ;;
+esac

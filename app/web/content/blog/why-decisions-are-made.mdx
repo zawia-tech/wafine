@@ -1,0 +1,64 @@
+---
+title: "Why Decisions Are Made — Three Real Calls, Options Discarded, Reasons Kept"
+description: "Invite-only waitlist, no pricing at launch, launch languages EN/FR/Darija — from the vault Decisions folder, what was chosen, what was rejected, and why."
+date: 2026-10-18
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [decisions, governance, transparency]
+draft: true
+stage: journey
+---
+
+Every product decision is recorded as a dated note in our private decision log. Owner decisions are final; captain proposals are marked proposed. Here are three from 2026-10-17 (owner-defaults v2).
+
+## 1. Invite-only waitlist until public release
+
+**Decision.** Access stays invite-only with a waitlist until there is enough feedback and iteration for a public release.
+
+**Options discarded.**
+- Public sign-up with pricing tiers (rebrand plan §3.1 item 6)
+- Public sign-up with a free tier and paid upgrades
+
+**Reasons.**
+- The BFF already had allowlist-gated sign-up (`allowlisted_numbers`, RLS on). The infra was there.
+- WhatsApp automation carries ban risk. A small, known cohort lets us iterate on pacing, session health, and support load without exposing strangers to a banned number.
+- The waitlist form (email required, WhatsApp number optional, use case optional, locale) captures intent before we invite. No newsletter, no sharing addresses.
+- Nav has a Waitlist entry and no Pricing.
+
+**Source.** `2026-10-17-invite-only-waitlist.md`, `owner-defaults.md v2`.
+
+## 2. No pricing at launch
+
+**Decision.** No pricing on the site at launch. Pricing will be calculated later to cover cloud infra, devops, development and scaling. It is not tied to Zawia's business; Zawia is a community by Ai4x Academy.
+
+**Options discarded.**
+- Pricing page with tiers (Starter / Pro / Team)
+- "Free during beta" with future pricing TBD
+- Usage-based pricing from day one
+
+**Reasons.**
+- The rebrand plan asked explicitly: pricing page with tiers, or waitlist. The owner chose waitlist.
+- Cost drivers are known (OCI VM, Supabase, Cloudflare, domain, dev time) but the per-session economics at scale are not. One A1 VM carries ~12 sessions; the VM may be reclaimed if idle 7 days (Free Trial → Always Free).
+- "Free" is a forbidden claim in marketing (skill `wafine-marketing`): no pricing decision exists, the CTA is "Join the waitlist".
+- Pricing proposal is planned for December (`Roadmap-KPIs-OKRs.md`).
+
+**Source.** `2026-10-17-no-pricing-at-launch.md`, `owner-defaults.md v2`.
+
+## 3. Launch languages: EN, FR, Moroccan Darija / Arabic — all at launch, RTL required
+
+**Decision.** EN, FR and Moroccan Darija / Arabic are all launch languages. AR is not a scaffold. RTL is required.
+
+**Options discarded.**
+- EN + FR at launch, AR as a post-launch scaffold (RESUME-WAFINE.md still described task 13 this way)
+- EN only at launch, FR/AR later
+
+**Reasons.**
+- The product is built in Morocco for a Moroccan-first audience (Zawia Tech community, then SMEs, C-suite, community managers). Shipping without Arabic and Darija would contradict the positioning.
+- The site hero already uses a Darija hook ("حوّل رقم واتساب ديالك لمساعد ذكي يخدم معاك") over MSA body — mixing is accepted on hooks only.
+- Task 13 builds the `[locale]` segment for all three, `dir="rtl"` and logical CSS for AR, an Arabic font (Noto Sans Arabic), and per-locale OG variants.
+- Darija wording is **never final until a native reader validates it** (vault records this). The skill flags every Darija line as `[to validate by a native reader]`.
+
+**Source.** `2026-10-17-launch-languages.md`, `owner-defaults.md v2`.
+
+---
+
+The pattern: the owner decides, the captain proposes, the vault records. No decision is implicit. If you want to know why something is the way it is, the note exists.

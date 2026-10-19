@@ -1,0 +1,44 @@
+{
+  "name": "@wafine/bff",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --target=bun --outdir=dist",
+    "start": "bun run dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "bunx eslint src/",
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1152.0",
+    "@aws-sdk/s3-request-presigner": "^3.1152.0",
+    "@hono/zod-validator": "^0.4.1",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@orpc/client": "^1.15.7",
+    "@orpc/server": "^1.15.7",
+    "argon2": "^0.45.1",
+    "bullmq": "^6.3.16",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.14",
+    "ioredis": "^6.0.0",
+    "libsodium-wrappers": "^0.8.4",
+    "postgres": "^3.4.9",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
+    "@eslint/js": "^10.0.1",
+    "@types/bun": "^1.4.3",
+    "@types/libsodium-wrappers": "^0.8.2",
+    "@types/node": "^22.10.2",
+    "drizzle-kit": "^0.28.1",
+    "eslint": "^9.17.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.71.2"
+  }
+}

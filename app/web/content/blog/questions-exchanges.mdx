@@ -1,0 +1,43 @@
+---
+title: "Questions and Exchanges — Open Questions to Readers, How to Reply"
+description: "Open questions for the community, the waitlist reply path, no comment system yet. We read every reply."
+date: 2026-10-18
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [questions, community, feedback]
+draft: true
+stage: magnet
+---
+
+We are building in public, but we do not have a comment system yet. No Disqus, no GitHub Discussions on the blog, no embedded thread. This is intentional — every dependency is a surface for tracking, and we are not adding one until the owner decides.
+
+## How to reach us
+
+**Waitlist reply path.** Join the waitlist at `/auth/signup` (or `/fr/auth/signup`, `/ar/auth/signup`). The form captures email (required), WhatsApp number (optional), use case (optional), and locale. When we invite a batch, we send one message from the waitlist email address. Reply to that message — it lands in a shared inbox the captain and owner read.
+
+**GitHub issues.** The repo is `zawia-tech/wafine`. Issues are open for bug reports, feature requests, and technical questions. Use the issue templates.
+
+**Email.** `morchid@zawia.tech` for product questions, `youssef.ghalem@ai4x.academy` for partnership and sponsorship.
+
+## Open questions we are genuinely asking
+
+1. **Pacing defaults.** The current defaults are 100 s gap and 300 daily cap per session for auto-replies. REST/MCP sends count against the cap but are not gap-paced. Is this the right starting point for your workflows? What would you change?
+
+2. **Session capacity.** One A1 VM (2 OCPU, 12 GB) carries ~12 sessions. The VM may be reclaimed if idle 7 days (Free Trial → Always Free). We invite in small batches. What session count would make you self-host instead of using the hosted version?
+
+3. **Darija wording.** The site hero uses a Darija hook ("حوّل رقم واتساب ديالك لمساعد ذكي يخدم معاك") over MSA body. We have two phrasings for every Darija line and a native reader validates before launch. If you are a native Darija speaker, we would value your read on `app/web/messages/ar.json` and the marketing copy in `docs/marketing/`.
+
+4. **MCP vs REST for your agents.** The same session answers both. Do you prefer MCP (Claude, Cursor, custom agents) or REST (your own scripts, n8n, Zapier)? What tooling is missing on either side?
+
+5. **Self-hosting blockers.** The compose stack, BFF, and web app are open-core. What would stop you from self-hosting today? Missing docs, infra complexity, Supabase dependency, something else?
+
+6. **Data residency.** The gateway runs in Casablanca (OCI `af-casablanca-1`), the database in Paris (Supabase `eu-west-3`). This is an international transfer under Moroccan law 09-08. Does this work for your compliance? What would you need to see documented?
+
+7. **Claude connector UX.** Current flow: Settings → Connectors → Add custom connector → URL `https://api.example.com/mcp` → OAuth → sign in on web host → Allow. One terminal command for Claude Code: `claude mcp add --transport http whatsapp <connector URL>`. What is confusing? What would you streamline?
+
+8. **Waitlist signal.** The waitlist captures use case (free text). What use cases should we prioritize in the first invite waves? Booking confirmations, support triage, lead qualification, internal notifications, something else?
+
+## What we do with replies
+
+Every reply to the waitlist email is read by the maintainers. We do not auto-reply, we do not add you to a newsletter, we do not share your address. We group themes, prioritize the ones that unblock real workflows, and feed them into the next sprint plan on the kanban board.
+
+If you want a public thread, open a GitHub Discussion on the repo (we may enable it) or tag us on LinkedIn/X — but the waitlist reply is the only path that guarantees a read.

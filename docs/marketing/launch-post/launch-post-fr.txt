@@ -1,0 +1,18 @@
+Imaginez un client qui vous écrit sur WhatsApp à 23 h pour demander un créneau pour demain. Vous lisez le message à 8 h. Le créneau est pris.
+
+Si vos clients vous écrivent sur WhatsApp, vous ne pouvez pas répondre à tout, à toute heure.
+
+WaFine relie votre numéro WhatsApp à une API REST et à un endpoint MCP. Vous liez le numéro en scannant un QR code depuis WhatsApp Web. Vos réponses automatiques passent par un seul expéditeur, avec un intervalle réglable. Les envois par API, par MCP et les réponses automatiques sont comptés dans un plafond quotidien par session.
+
+Claude se connecte en OAuth et ne voit jamais votre clé API. L'écran de consentement indique ce qu'il peut lire et envoyer, uniquement via votre session. Pour le déconnecter, passez par la section « Connected apps » de votre page WhatsApp : son accès prend fin.
+
+Notre limite : le rythme d'envoi réduit le risque de blocage, il ne le supprime pas. Aucune passerelle ne peut promettre qu'un numéro ne sera jamais banni. Notre règle : n'écrire qu'aux personnes qui vous ont contacté en premier.
+
+WaFine est sur invitation, conçu au Maroc, et grandit prudemment.
+Rejoindre la liste d'attente : [LIEN À VÉRIFIER]
+
+WaFine, sponsorisé par Ai4x Academy, construit par ZawIA.Tech, open-core sur OpenWA.
+
+WaFine est une passerelle indépendante et non officielle. Elle n'est ni affiliée à WhatsApp LLC ou Meta Platforms, Inc., ni autorisée ou approuvée par elles. WhatsApp est une marque de WhatsApp LLC. Claude est une marque d'Anthropic, PBC.
+
+#WhatsApp #PME #Maroc

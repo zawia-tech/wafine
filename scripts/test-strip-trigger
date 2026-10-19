@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Offline test of supabase/migrations/20261018130000_openwa_strip_archived_media.sql against a
+# throwaway Postgres container (never touches Supabase). Needs docker and the postgres:16-alpine image.
+#
+#   scripts/test-strip-trigger
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MIGRATION="$ROOT/supabase/migrations/20261018130000_openwa_strip_archived_media.sql"
+NAME="pgtest-strip-$$"
+
+docker run -d --rm --name "$NAME" --tmpfs /var/lib/postgresql/data -e POSTGRES_PASSWORD=t -m 300m \
+  postgres:16-alpine >/dev/null
+trap 'docker stop "$NAME" >/dev/null 2>&1 || true' EXIT
+
+# the image restarts once after initdb, so wait for the SECOND "ready" line
+for _ in $(seq 1 90); do
+  [ "$(docker logs "$NAME" 2>&1 | grep -c 'ready to accept connections')" -ge 2 ] && break
+  sleep 1
+done
+
+psql_in() { docker exec -i "$NAME" psql -U postgres -v ON_ERROR_STOP=1 -q -At "$@"; }
+
+psql_in <<'SQL'
+create schema openwa;
+create table openwa.messages(id serial primary key, "mediaPath" varchar, "mediaMimetype" varchar, metadata text);
+SQL
+psql_in < "$MIGRATION"
+psql_in < "$MIGRATION" # idempotent
+
+psql_in <<'SQL'
+insert into openwa.messages(metadata) values ('{"media":{"mimetype":"image/jpeg","data":"aGVsbG8gd29ybGQ="}}');                  -- 1 inline, not archived
+insert into openwa.messages(metadata,"mediaPath") values ('{"media":{"mimetype":"image/jpeg","data":"https://x.test/a.jpg"}}','k'); -- 2 url pointer
+insert into openwa.messages(metadata,"mediaPath") values ('not json "data"','k');                                                -- 3 invalid json
+insert into openwa.messages(metadata,"mediaPath") values (E'{"media":{"data":"AAA\\u0000AAA"}}','k');                            -- 4 NUL escape
+insert into openwa.messages(metadata,"mediaPath") values ('{"quotedMessage":{"data":"x"}}','k');                                 -- 5 no media
+insert into openwa.messages(metadata,"mediaPath") values ('{"media":{"mimetype":"audio/ogg","sizeBytes":999,"data":"aGk="},"quotedMessage":{"id":"q"}}','k'); -- 6 sizeBytes kept
+insert into openwa.messages(metadata,"mediaPath") values ('{"media":{"data":"aGVsbG8="}}','k');                                  -- 7 padding math
+SQL
+
+fail=0
+check() { # check <label> <sql returning t/f>
+  if [ "$(psql_in -c "$2")" = t ]; then echo "ok   $1"; else echo "FAIL $1"; fail=1; fi
+}
+check "inline media is kept until the archive pointer exists" \
+  "select metadata::jsonb #>> '{media,data}' = 'aGVsbG8gd29ybGQ=' from openwa.messages where id=1"
+psql_in -c "update openwa.messages set \"mediaPath\"='media/chat-media/s/a.jpg' where id=1"
+check "archive pointer strips the payload and marks it omitted" \
+  "select (metadata::jsonb -> 'media') = '{\"omitted\":true,\"mimetype\":\"image/jpeg\",\"sizeBytes\":11}'::jsonb from openwa.messages where id=1"
+psql_in -c "update openwa.messages set metadata='{\"media\":{\"data\":\"aGVsbG8gd29ybGQ=\"}}' where id=1"
+check "re-inlining while archived is stripped again" \
+  "select not (metadata::jsonb -> 'media' ? 'data') from openwa.messages where id=1"
+check "URL pointers are kept" "select metadata like '%https://x.test/a.jpg%' from openwa.messages where id=2"
+check "invalid json is left untouched" "select metadata = 'not json \"data\"' from openwa.messages where id=3"
+check "NUL escape is left untouched" "select metadata like '%u0000%' from openwa.messages where id=4"
+check "rows without media are left untouched" "select metadata = '{\"quotedMessage\":{\"data\":\"x\"}}' from openwa.messages where id=5"
+check "declared sizeBytes and sibling keys survive" \
+  "select (metadata::jsonb -> 'media' ->> 'sizeBytes') = '999' and metadata::jsonb -> 'quotedMessage' ->> 'id' = 'q' from openwa.messages where id=6"
+check "sizeBytes is derived from the base64 length" \
+  "select (metadata::jsonb -> 'media' ->> 'sizeBytes') = '5' from openwa.messages where id=7"
+
+exit "$fail"

@@ -1,0 +1,67 @@
+---
+title: Getting started
+description: Request an invite, sign up, link WhatsApp by QR and make your first API call.
+---
+
+This page takes you from an invite request to your first message sent through the API.
+It takes about ten minutes.
+
+## Before you begin
+
+- A WhatsApp account on a phone you control. A dedicated number is strongly recommended;
+  see [Using WhatsApp](/using-whatsapp).
+- An email address you can read, to confirm your account.
+- A terminal with `curl`, for the first API call.
+
+## 1. Request an invite
+
+WaFine is invite-only. Join the waitlist from the WaFine website with your email and,
+optionally, the WhatsApp number you plan to use and a short note on your use case.
+When your invite is approved, that number is added to the allowlist.
+
+## 2. Sign up with your invited number
+
+1. Open the WaFine web app and choose **Sign up**.
+2. Enter your email, a password and the invited WhatsApp number in international format,
+   for example `+212 6XX XX XX XX`.
+3. Confirm your email from the link you receive, then sign in.
+
+Sign-up is refused if the number is not on the allowlist, or if it is already used by
+another account.
+
+## 3. Link WhatsApp by QR
+
+1. In the web app, open **WhatsApp** and create your session.
+2. A QR code appears. On your phone, open WhatsApp, go to **Linked devices**, choose
+   **Link a device** and scan the code.
+3. Wait until the session shows as connected.
+
+The linked number must be the one you signed up with. If you scan with a different number,
+WaFine logs that device out and the session reports a phone mismatch.
+
+## 4. Create an API key
+
+1. On the **WhatsApp** page, create an API key.
+2. Copy it immediately. It is shown once; store it in a password manager.
+
+The same page shows your **session ID**, the **REST base URL** and the **MCP endpoint**.
+
+## 5. Send your first message
+
+Replace the placeholders with your own values. The chat ID is the recipient's number in
+international format without `+` or spaces, followed by `@c.us`.
+
+```bash
+curl -X POST "https://api.example.com/wa/sessions/<session-id>/messages/send-text" \
+  -H "X-API-Key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"chatId":"2126XXXXXXXX@c.us","text":"Hello from WaFine"}'
+```
+
+Start by messaging yourself or someone who expects your message.
+
+## Next steps
+
+- [API keys and sessions](/api-keys-and-sessions): read chats and manage keys.
+- [MCP and Claude](/mcp-and-claude): connect Claude to your number.
+- [Workflows](/workflows): turn on paced auto-replies.

@@ -1,0 +1,22 @@
+{
+  "en": {
+    "brand": 3.13,
+    "invite": 2.98,
+    "qr": 4.1,
+    "key": 3.68,
+    "curl": 3.78,
+    "replies": 3.31,
+    "mcp": 2.9,
+    "outro": 2.01
+  },
+  "fr": {
+    "brand": 3.1,
+    "invite": 3.69,
+    "qr": 4.39,
+    "key": 3.49,
+    "curl": 4.31,
+    "replies": 4.02,
+    "mcp": 3.57,
+    "outro": 2.71
+  }
+}

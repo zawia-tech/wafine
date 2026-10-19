@@ -1,0 +1,77 @@
+---
+title: "Release v0.1.2-alpha — CHANGELOG and Notes"
+description: "Built from merged PRs #88-#108. Added, Changed, Fixed, Security. Note: docs/release.md still says v1.0.0 at launch — owner to reconcile."
+date: 2026-10-19
+author: "Mohamed Moughamir with the WaFine agents"
+tags: [release, changelog]
+draft: true
+stage: journey
+---
+
+## [0.1.2-alpha] - 2026-10-19
+
+Built from merged PRs #88 through #108 on `main`.
+
+**This is an alpha release — v0.1.2-alpha, not final.** Everything below reflects the alpha state of the product.
+
+### Added
+
+- **Design system completion** (#95, #92, #89, #83): daisyUI themes `wafine`/`wafine-dark`, `@wafine/*` package scopes, Fredoka 600 headings, Inter body, Noto Sans Arabic, pine/cream/clay palette, three-step elevation, layered depth on landing, white-label aliases.
+- **Public docs site** (#94, #91, #90, #88, #83): Fumadocs at `/` with EN/FR/AR i18n, hand-written user pages, sitemap/robots, no auth gate, R2-aligned media wording.
+- **Tutorial video** (#104, #102, #103, #107): Remotion pipeline, EN/FR/AR voice-overs (Piper: Jenny, SIWIS), music ducking, SFX, per-locale posters, credits (SIWIS CC BY 4.0, Jenny).
+- **Account settings** (#106): profile, email, password, sessions, closure request.
+- **Roles and permissions** (#105): deadlock-free last-owner lock, role checks, owner role selector, 403 view for user, permission-driven admin tabs.
+- **Admin waitlist management** (#101): manage waitlist leads, audit status, refresh after failed bulk actions.
+- **Messages inbox** (#100): signed-in messages page, fresh presigned link per view, attachment-specific error text.
+- **i18n auth** (#103): localized auth page and error codes.
+- **README brand cover** (#102): one-prompt Claude setup, docs tutorial outline.
+- **Go-live operator docs** (on `main`): `docs/go-live-2026-10-20.md` (ordered owner runbook, per-step rollback, five-layer rollback), `scripts/go-live-check` (`make go-live-check`).
+- **Agent workspace tooling** (on `main`): repomix pack (`make pack`), graft graph (`make graph`/`graph-check`), Serena symbol server, rtk wiring.
+
+### Changed
+
+- **Media storage**: OCI Object Storage (Always Free 20 GB, same tenancy) replaces Cloudflare R2 as primary; R2 stays supported via env flip. Provider-neutral S3 config, batched idempotent backfill, lifecycle policy. (#96, #93, #91, #90, #89)
+- **Gateway stays private** (decision 2026-10-11): the WhatsApp gateway is never exposed publicly — private access only.
+- **Docs are public**: the docs site serves with no auth gate — no Basic Auth, no login wall. Production web/API hostnames are not live yet; where they live (Cloudflare-managed zone or registrar records) is a pending owner decision.
+- **Sign-up allowlist**: BFF allowlist-gated sign-up, Supabase Auth adapter, admin dashboard, E.164 normalization.
+- **API send budget**: BFF per-session budget (Valkey, UTC day + per-minute), charged on `/wa` sends, `/mcp` send tools, auto-replies; refund on engine refusal.
+- **Claude connector**: OAuth 2.1 authorization server, opaque tokens, sealed engine keys, refresh rotation, disconnect revokes grant.
+- **Linux workstation support** (#2): portable `scripts/bootstrap.sh`, `scripts/tailnet-sidecar` (rootless second tailnet), fixed `scripts/gh-observer` date bug.
+- **Terraform AWS dev workspace** (#8, #9): multi-platform lockfiles, `make tf-aws-init/plan/apply` + `sidecar-login`.
+
+### Fixed
+
+- **Crypto hardening** (#97): require full GCM tag and 12-byte IV in SecretBox; length checks for XChaCha nonces and KEKs.
+- **CodeRabbit post-merge audit** (9bb9a81): locale-aware footer links, docs disclaimer, no private repo link, accurate media wording, R2 in ops docs.
+- **Hydration mismatch** on contact email (c8ffde6).
+- **Video credits** (6e7d050): SIWIS CC BY 4.0, Jenny voice.
+- **Supabase service role key** handling: removed from required production env vars (re-added for sign-up rollback).
+- **CORS default-deny** enforced.
+
+### Security
+
+- **E2E encryption design** (`docs/04-e2e-encryption.md`): XChaCha20-Poly1305, HMAC blind index, Argon2id KDF. (Design as of 2026-10-08; verify implementation status.)
+- **RLS on owner tables**: `allowlisted_numbers`, `user_profiles`, `bff_settings`, `wa_session_limits` — RLS enabled, no policies (only owner bypasses).
+- **OAuth tokens**: opaque, stored as SHA-256 only, bound to one grant; refresh rotation; reuse revokes connection.
+- **API keys**: shown once, stored hashed, scoped to one session, up to 5 active.
+- **Disabled users**: clean 403 on `/api`, `/wa`, `/mcp`, keys and connectors included.
+- **Rate limits**: register 20/min/IP, token 60/min/IP, MCP 120/min per connection, auth IP-throttled.
+
+---
+
+### Owner action required
+
+`docs/release.md` still says **v1.0.0 at launch** (the original plan). This CHANGELOG reflects v0.1.2-alpha as the current release candidate. Please reconcile `docs/release.md` with this version before the launch PR is merged.
+
+### Verification
+
+- `make check` passes (shellcheck clean)
+- BFF: `bun run typecheck` 0 errors, `bun run lint` clean, `bun test` 259/259 pass
+- Web: `bun run typecheck` 0 errors, `bun run lint` clean (9 pre-existing warnings), `bun test` 199 pass / 4 fail (pre-existing e2e config issue unrelated to blog), `bun run build` OK
+- CI: `.github/workflows/app.yml` (typecheck + lint + test + build for both submodules)
+- Nightly health job: `.github/workflows/nightly-health.yml` (02:17 UTC)
+- Graft CI job: `graph-check`
+
+---
+
+**Credits:** WaFine, sponsored by Ai4x Academy, built by ZawIA.Tech, open-core on OpenWA.
