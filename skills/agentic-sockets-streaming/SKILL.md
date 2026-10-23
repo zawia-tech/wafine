@@ -60,7 +60,7 @@ Heartbeats here are protocol `ping` frames, not text - do not confuse them with 
 messages.
 
 ## MCP Streamable HTTP (the transport WAFINE uses)
-One endpoint supporting POST and GET (`~/wafine/research/mcp-transports.md:52-137`):
+One endpoint supporting POST and GET (`<operator-docs>/research/mcp-transports.md:52-137`):
 - Every client JSON-RPC message is a **new POST**. Client `Accept` must list both
   `application/json` and `text/event-stream`.
 - A request gets either one JSON object or an **SSE stream**; the response for the
@@ -87,7 +87,7 @@ silent hang.
 - On the server, tag events with a monotonic cursor so a reconnecting client is not
   handed duplicates as if new; clients dedupe on the cursor id.
 - A2A requires events delivered in generation order and allows multiple concurrent
-  streams per task (`~/wafine/research/a2a.txt:1196-1209`).
+  streams per task (`<operator-docs>/research/a2a.txt:1196-1209`).
 
 ## Does the WAFINE BFF stream today?
 **It does not originate a stream** - no SSE, WebSocket, `streamSSE` or `EventSource`
@@ -109,6 +109,6 @@ If a WAFINE feature needs live updates, that is new work: add an SSE route in th
 stream that is not there.
 
 ## References
-- `~/wafine/research/mcp-transports.md`, `~/wafine/research/a2a.txt`
+- `<operator-docs>/research/mcp-transports.md`, `<operator-docs>/research/a2a.txt`
 - https://html.spec.whatwg.org/multipage/server-sent-events.html, RFC 6455
 - `app/bff/src/adapters/http/routes/gateway-proxy.ts`, `app/web/src/lib/bff-proxy.ts`

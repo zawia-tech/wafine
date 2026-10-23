@@ -23,9 +23,9 @@ each end*: a model, an agent, or an app. WAFINE sits in this space already.
 ## They compose, not compete
 A2A and ACP are agent-to-agent; MCP is agent-to-tool. In a real system the edges
 differ: an A2A client asks an A2A server to do a task; that server uses MCP to reach
-its own tools and data (`~/wafine/research/a2a.txt:4127-4133`). The ACP docs draw the
+its own tools and data (`<operator-docs>/research/a2a.txt:4127-4133`). The ACP docs draw the
 same picture: MCP stays *inside* one agent, ACP links agents
-(`~/wafine/research/acp3.md:11-36`).
+(`<operator-docs>/research/acp3.md:11-36`).
 
 ## When to use which
 | Need | Use |
@@ -40,7 +40,7 @@ same picture: MCP stays *inside* one agent, ACP links agents
 Two unrelated protocols abbreviate to ACP:
 1. **Agent Communication Protocol** - IBM, `agentcommunicationprotocol.dev`; REST,
    agent runs with states `created → in-progress → completed|failed|awaiting|cancelling`
-   and an `Await` mechanism to pause for input (`~/wafine/research/acp4.md:17-87`).
+   and an `Await` mechanism to pause for input (`<operator-docs>/research/acp4.md:17-87`).
 2. **Agent Client Protocol** - editor↔coding-agent over JSON-RPC/stdio; the "acp"
    subcommand in `hermes acp` and `opencode acp`. `herdr agent start --kind` lists
    `hermes`, `opencode`, `claude`, `gemini` among the kinds it can launch, and each
@@ -77,8 +77,8 @@ Always say which ACP you mean. When in doubt, spell it out.
 - Vocabulary overlaps; if a doc says "ACP", confirm which one before acting.
 
 ## References
-- `~/wafine/research/a2a.txt` (Appendix B, `:4127-4133`), `~/wafine/research/acp.txt`,
-  `acp3.md`, `acp4.md`, `~/wafine/research/mcp-transports.md`
+- `<operator-docs>/research/a2a.txt` (Appendix B, `:4127-4133`), `<operator-docs>/research/acp.txt`,
+  `acp3.md`, `acp4.md`, `<operator-docs>/research/mcp-transports.md`
 - https://modelcontextprotocol.io, https://a2a-protocol.org/latest/specification,
   https://agentcommunicationprotocol.dev
 - `docs/09-sessions-keys-mcp.md`, `docs/10-claude-connector.md`, `docs/07-agentic-bff-plan.md`
