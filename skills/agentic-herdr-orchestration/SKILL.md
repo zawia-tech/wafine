@@ -55,7 +55,7 @@ One **captain** agent (the Claude pane that owns the fleet) hands a brief to one
 **worker** per task; each worker runs in its own git worktree so work never collides
 (dev worktrees via `scripts/dev-env`). The captain does not implement; it
 dispatches, watches, and reviews. A worker:
-1. reads its brief (e.g. `~/wafine/briefs/<name>.md`), works only inside its worktree;
+1. reads its brief (e.g. `<operator-docs>/briefs/<name>.md`), works only inside its worktree;
 2. keeps its branch current, opens ONE draft PR, keeps CI green;
 3. reports once to the captain, then stops.
 
@@ -70,7 +70,7 @@ id. Send the machine-readable line exactly once, then stop:
 ```bash
 herdr agent prompt <captain-target> 'A2A {"from":"<worker>","task":"<task-id>","state":"completed|blocked|failed","artifact":"<PR-URL>","message":"<= 200 chars>"}'
 ```
-The human-readable equivalent lives in `~/wafine/REPORTING.md` as a small block:
+The human-readable equivalent lives in `<operator-docs>/REPORTING.md` as a small block:
 `from:`, `task:`, `status:`, `artifact:`, `notes:`. Both say the same thing. Use
 `state:"blocked"` with a `message` explaining the blocker rather than going silent.
 
@@ -102,4 +102,4 @@ The human-readable equivalent lives in `~/wafine/REPORTING.md` as a small block:
 - `herdr --skill` (control guide), `herdr agent --help`, `herdr pane --help`,
   `herdr tab --help`
 - https://herdr.dev/agent-guide.md, https://herdr.dev/llms.txt
-- `~/wafine/REPORTING.md`, this repo's `scripts/dev-env` (worktree workflow)
+- `<operator-docs>/REPORTING.md`, this repo's `scripts/dev-env` (worktree workflow)

@@ -102,7 +102,7 @@ Storage is not used for media (an earlier OCI plan, `terraform/oci/media.tf`, is
 | Node | State (2026-10-15, read-only) | What it needs |
 |---|---|---|
 | OCI VM `wafine-vm` | Holds the WhatsApp session, `STORAGE_TYPE=local`, archive off. | All settings below, then a restart. |
-| Operator workstation (`~/Work/openwa-oci-infra`, compose project `openwa`) | **Not running**: 0 containers (only the `openwa_openwa-data` and `openwa_redis-data` volumes remain). Its `stack/.env` still has `STORAGE_TYPE=s3` with an old endpoint and no archive settings. | Nothing while it stays off. Before it is ever started against the shared database again, copy the same media and retention settings (the same endpoint as the VM), or it re-inlines media. |
+| Operator workstation (`<repo-root>`, compose project `openwa`) | **Not running**: 0 containers (only the `openwa_openwa-data` and `openwa_redis-data` volumes remain). Its `stack/.env` still has `STORAGE_TYPE=s3` with an old endpoint and no archive settings. | Nothing while it stays off. Before it is ever started against the shared database again, copy the same media and retention settings (the same endpoint as the VM), or it re-inlines media. |
 
 ## Settings (every node that shares the database)
 

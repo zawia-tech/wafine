@@ -12,7 +12,7 @@ WAFINE already runs MCP in the BFF (`docs/09-sessions-keys-mcp.md`,
 `docs/10-claude-connector.md`) and a local A2A wrapper
 (`a2a-opencode` around `opencode serve`) already runs on the operator workstation.
 
-Primary source for this skill: `~/wafine/research/a2a.txt` (a text extract of the
+Primary source for this skill: `<operator-docs>/research/a2a.txt` (a text extract of the
 spec). Cite line anchors below when you need to re-check.
 
 ## Core model (`a2a.txt:592-604`, `:1247-1430`)
@@ -107,7 +107,7 @@ in any doc or PR.
 - One `Part` carries exactly one of text/raw/url/data (`:1400`).
 
 ## References
-- `~/wafine/research/a2a.txt` (spec extract, v1.0.0)
+- `<operator-docs>/research/a2a.txt` (spec extract, v1.0.0)
 - https://a2a-protocol.org/latest/specification
 - https://modelcontextprotocol.io (MCP, the complementary agent-to-tool protocol)
 - `docs/09-sessions-keys-mcp.md`, `docs/10-claude-connector.md`, `docs/13-agentic-protocols.md`

@@ -1,7 +1,7 @@
 /**
  * The WaFine mark, as shared geometry: the speech bubble and the Arabic wordmark
  * وافين from Noto Kufi Arabic Black (SIL OFL), as shipped by the captain in
- * ~/wafine/brand/arabic-wordmark/wafin-NotoKufiArabic-Black.svg.
+ * <operator-docs>/brand/arabic-wordmark/wafin-NotoKufiArabic-Black.svg.
  *
  * Path data is used verbatim (no hand-editing, no mirroring). Placement is a
  * translate+scale only, computed to fit the word inside the bubble body.

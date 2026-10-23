@@ -14,7 +14,7 @@ transports, the framing rules that make them safe, and the reliability bits
 |---|---|---|
 | **Unix domain socket** | local, bidirectional, stream | filesystem path, not a port; `man 7 unix` |
 | **Named pipe (FIFO)** | shell one-way plumbing, log/metrics tap | `mkfifo`; unidirectional, blocking |
-| **stdio** | a parent launches a child and speaks on its pipes | MCP uses this (`~/wafine/research/mcp-transports.md:22-50`) |
+| **stdio** | a parent launches a child and speaks on its pipes | MCP uses this (`<operator-docs>/research/mcp-transports.md:22-50`) |
 | **TCP loopback** | you need it to look like a network socket | bind `127.0.0.1`, never `0.0.0.0` |
 | **gRPC** | typed, cross-language, streaming RPC | HTTP/2 framing; https://grpc.io |
 
@@ -30,7 +30,7 @@ All of the stream ones need **framing**: a byte stream has no message boundaries
 
 ## Example: JSON-RPC 2.0 over a unix socket (Bun/Node, runs as-is)
 JSON-RPC 2.0 is the envelope MCP and A2A's JSON-RPC binding both use
-(https://www.jsonrpc.org/specification; `~/wafine/research/a2a.txt:2922-2947`).
+(https://www.jsonrpc.org/specification; `<operator-docs>/research/a2a.txt:2922-2947`).
 
 ```ts
 // rpc.ts — server then client over a unix socket. Run: bun rpc.ts
@@ -106,7 +106,7 @@ how a fast agent OOMs a slow one.
   attempts; never retry a 4xx that is the client's fault. A retried send must reuse
   the same idempotency key.
 - **At-least-once** - A2A push notifications are explicitly at-least-once and clients
-  must process idempotently (`~/wafine/research/a2a.txt:1550-1554`). Assume duplicates.
+  must process idempotently (`<operator-docs>/research/a2a.txt:1550-1554`). Assume duplicates.
 
 ## What this repo uses today
 - JSON-RPC: parsed from proxied MCP bodies and error replies
@@ -118,7 +118,7 @@ how a fast agent OOMs a slow one.
   (they are general-purpose tools, not current WAFINE plumbing).
 
 ## References
-- `~/wafine/research/mcp-transports.md` (stdio, Streamable HTTP)
-- `~/wafine/research/a2a.txt` (JSON-RPC binding, idempotency, push delivery)
+- `<operator-docs>/research/mcp-transports.md` (stdio, Streamable HTTP)
+- `<operator-docs>/research/a2a.txt` (JSON-RPC binding, idempotency, push delivery)
 - https://www.jsonrpc.org/specification, https://grpc.io, `man 7 unix`, `man 3 mkfifo`
 - `app/bff/src/adapters/http/routes/{gateway-proxy,webhook}.ts`

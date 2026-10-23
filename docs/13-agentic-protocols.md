@@ -4,9 +4,9 @@
 **Companion skills (this pack, `skills/`):**
 `agentic-a2a-protocol`, `agentic-protocol-landscape`, `agentic-ipc-rpc`,
 `agentic-sockets-streaming`, `agentic-herdr-orchestration`.
-**Sources:** `~/wafine/research/a2a.txt` (A2A spec v1.0.0 extract),
-`~/wafine/research/{acp.txt,acp3.md,acp4.md}` (Agent Communication Protocol),
-`~/wafine/research/mcp-transports.md` (MCP transports); repo code as cited inline.
+**Sources:** `<operator-docs>/research/a2a.txt` (A2A spec v1.0.0 extract),
+`<operator-docs>/research/{acp.txt,acp3.md,acp4.md}` (Agent Communication Protocol),
+`<operator-docs>/research/mcp-transports.md` (MCP transports); repo code as cited inline.
 
 ## 1. Why study agent protocols now
 WAFINE already speaks one agent protocol well: the BFF exposes an MCP server at
