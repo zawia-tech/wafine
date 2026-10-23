@@ -91,7 +91,7 @@
     "snippetHeading": "Ou depuis un terminal avec Claude Code",
     "snippetFieldLabel": "Commande Claude Code",
     "snippet": "claude mcp add --transport http whatsapp {connectorUrl}",
-    "consentNote": "L'écran de consentement est explicite : Claude peut lire vos chats, messages, contacts et groupes, et envoyer des messages depuis votre numéro — via votre session uniquement. Révoquez la clé et l'accès s'arrête immédiatement.",
+    "consentNote": "L'écran de consentement est explicite : Claude peut lire vos chats, messages, contacts et groupes, et envoyer des messages depuis votre numéro — via votre session uniquement. Déconnectez Claude sous « Applications connectées » dans l'app web pour couper son accès.",
     "docsLabel": "Lire le guide du connecteur"
   },
   "features": {
@@ -100,11 +100,11 @@
     "items": [
       {
         "title": "Envoi rythmé",
-        "body": "Chaque message sortant passe par un seul expéditeur avec un intervalle configurable et un plafond quotidien. Pas de rafales, pas de tempêtes de nouvelles tentatives, un seul chemin pour le texte rédigé par l'IA comme pour les réponses manuelles."
+        "body": "Seules les réponses automatiques des workflows sont rythmées : un intervalle configurable entre les messages, un plafond quotidien, pas de nouvelles tentatives automatiques. Les envois REST et MCP ne sont pas rythmés ainsi — ils sont bornés par le budget d'envoi par session (par défaut : 10 par minute, 300 par jour)."
       },
       {
         "title": "Clés API par session",
-        "body": "Créez une clé par session WhatsApp, voyez seulement son préfixe, révoquez-la en un clic. Un numéro ou cinq : ils ne partagent jamais leurs identifiants."
+        "body": "Créez jusqu'à cinq clés actives par session WhatsApp, voyez seulement un préfixe, révoquez-en une en un clic. Les clés ne partagent jamais leurs identifiants."
       },
       {
         "title": "API REST et MCP",
@@ -164,7 +164,7 @@
     "items": [
       {
         "q": "Est-ce que mon numéro peut être banni ?",
-        "a": "Oui — toute automatisation WhatsApp comporte ce risque, et aucune passerelle ne peut en promettre l'inverse. WaFine le réduit : chaque envoi est rythmé avec un intervalle configurable et un plafond quotidien, il n'y a pas de nouvelles tentatives automatiques, et un seul expéditeur concentre tout le trafic sortant. N'écrivez qu'aux personnes qui vous ont contacté en premier, et commencez doucement."
+        "a": "Oui — toute automatisation WhatsApp comporte ce risque, et aucune passerelle ne peut en promettre l'inverse. WaFine le réduit : les réponses automatiques des workflows sont rythmées avec un intervalle configurable et un plafond quotidien, et chaque envoi via l'API ou un connecteur est borné par le budget d'envoi par session (par défaut : 10 par minute, 300 par jour). Il n'y a pas de nouvelles tentatives automatiques. N'écrivez qu'aux personnes qui vous ont contacté en premier, et commencez doucement."
       },
       {
         "q": "Qui peut s'inscrire ?",
@@ -172,7 +172,7 @@
       },
       {
         "q": "Où sont mes données, et où en est la CNDP ?",
-        "a": "La session WhatsApp tourne sur notre propre VM à Casablanca et la base de données de l'application est dans la région parisienne de Supabase : vos données restent au Maroc et dans l'UE. Le contenu des messages est stocké chiffré, pas en texte lisible, et nous suivons les attentes de la loi marocaine 09-08 pour les données personnelles."
+        "a": "La session WhatsApp tourne sur notre propre VM à Casablanca et la base de données de l'application est dans la région parisienne de Supabase : vos données restent au Maroc et dans l'UE. Les données sont chiffrées en transit et les fournisseurs d'infrastructure les chiffrent au repos ; il n'y a pas de chiffrement de bout en bout du contenu des messages. Nous suivons les attentes de la loi marocaine 09-08 pour les données personnelles."
       },
       {
         "q": "Quels numéros puis-je connecter ?",
@@ -305,11 +305,11 @@
         },
         "where": {
           "heading": "Où elles résident",
-          "body": "La session WhatsApp et ses données locales restent sur notre propre serveur à Casablanca. La base de données de l'application est dans la région parisienne de Supabase. Le contenu des messages est stocké chiffré, pas en texte lisible."
+          "body": "La session WhatsApp et ses données locales restent sur notre propre serveur à Casablanca. La base de données de l'application est dans la région parisienne de Supabase. Les données sont chiffrées en transit ; il n'y a pas de chiffrement de bout en bout du contenu des messages."
         },
         "never": {
           "heading": "Ce que nous ne faisons jamais",
-          "body": "Nous ne vendons pas vos données, nous n'entraînons pas de modèles sur vos messages et nous ne confions pas votre session à un autre compte. Les médias et les sauvegardes sont stockés chiffrés."
+          "body": "Nous ne vendons pas vos données, nous n'entraînons pas de modèles sur vos messages et nous ne confions pas votre session à un autre compte. Les médias restent dans un stockage objet privé et ne s'obtiennent que par des liens signés à durée courte ; le contenu des messages n'est pas chiffré de bout en bout."
         },
         "choices": {
           "heading": "Vos choix",

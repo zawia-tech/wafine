@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Block direct pushes to main and develop (they move by pull request), and branch names outside the flow.
+# Maintainer bypass: ALLOW_PROTECTED_PUSH=1 git push ...   Name bypass: ALLOW_ANY_BRANCH=1
+set -euo pipefail
+. "$(dirname "$0")/_lib.sh"
+
+zero=0000000000000000000000000000000000000000
+while read -r _local_ref local_sha remote_ref remote_sha; do
+	[ "$local_sha" != "$zero" ] || continue # deleting a remote branch
+	name="${remote_ref#refs/heads/}"
+	[ "$name" != "$remote_ref" ] || continue # a tag
+	if [[ "$name" =~ $PROTECTED_RE ]]; then
+		[ "${ALLOW_PROTECTED_PUSH:-0}" = 1 ] ||
+			hook_fail "'$name' only moves by pull request. Push a branch and open a PR (docs/git-flow.md)."
+		continue
+	fi
+	if [ "$remote_sha" = "$zero" ] && [ "${ALLOW_ANY_BRANCH:-0}" != 1 ] &&
+		! [[ "$name" =~ $WORK_RE || "$name" =~ $LEGACY_RE ]]; then
+		hook_fail "new branch '$name' does not follow the flow: feature/, fix/, support/, release/ or hotfix/ + a lowercase slug."
+	fi
+done

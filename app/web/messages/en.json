@@ -91,7 +91,7 @@
     "snippetHeading": "Or from a terminal with Claude Code",
     "snippetFieldLabel": "Claude Code command",
     "snippet": "claude mcp add --transport http whatsapp {connectorUrl}",
-    "consentNote": "The consent screen is explicit: Claude can read your chats, messages, contacts and groups, and send messages from your number — through your session only. Revoke the key and the access ends immediately.",
+    "consentNote": "The consent screen is explicit: Claude can read your chats, messages, contacts and groups, and send messages from your number — through your session only. Disconnect Claude under Connected apps in the web app to end its access.",
     "docsLabel": "Read the connector guide"
   },
   "features": {
@@ -100,11 +100,11 @@
     "items": [
       {
         "title": "Paced sending",
-        "body": "Every outbound message goes through one sender with a configurable gap and a per-day cap. No bursts, no retry storms, one path for AI-written text and manual replies alike."
+        "body": "Only workflow auto-replies are gap-paced: a configurable gap between messages, a daily cap, and no automatic retries. REST and MCP sends are not paced that way — they are bounded by the per-session send budget (defaults: 10 per minute, 300 per day)."
       },
       {
         "title": "Per-session API keys",
-        "body": "Mint a key per WhatsApp session, see only its prefix, revoke it in one click. Bring one number or five; they never share credentials."
+        "body": "Mint up to five active keys per WhatsApp session, see only a prefix, revoke any of them in one click. Keys never share credentials."
       },
       {
         "title": "REST API and MCP",
@@ -164,7 +164,7 @@
     "items": [
       {
         "q": "Can my number get banned?",
-        "a": "Yes — any WhatsApp automation carries that risk, and no gateway can promise otherwise. WaFine reduces it: every send is paced with a configurable gap plus a per-day cap, there are no automatic retries, and one sender owns all outbound traffic. Only message people who contacted you first, and start slowly."
+        "a": "Yes — any WhatsApp automation carries that risk, and no gateway can promise otherwise. WaFine reduces it: workflow auto-replies are paced with a configurable gap and a daily cap, and every send made through the API or a connector is bounded by the per-session send budget (defaults: 10 per minute, 300 per day). There are no automatic retries. Only message people who contacted you first, and start slowly."
       },
       {
         "q": "Who can sign up?",
@@ -172,7 +172,7 @@
       },
       {
         "q": "Where is my data, and what about the CNDP?",
-        "a": "The WhatsApp session runs on our own VM in Casablanca and the application database is in Supabase’s Paris region, so your data stays in Morocco and the EU. Message content is stored encrypted, not as readable text, and we follow Moroccan law 09-08 expectations for personal data."
+        "a": "The WhatsApp session runs on our own VM in Casablanca and the application database is in Supabase’s Paris region, so your data stays in Morocco and the EU. Data is encrypted in transit and the infrastructure providers encrypt it at rest; there is no end-to-end encryption of message content. We follow Moroccan law 09-08 expectations for personal data."
       },
       {
         "q": "Which numbers can I connect?",
@@ -305,11 +305,11 @@
         },
         "where": {
           "heading": "Where it lives",
-          "body": "The WhatsApp session and its local data stay on our own server in Casablanca. The application database is in Supabase’s Paris region. Message content is stored encrypted, not as readable text."
+          "body": "The WhatsApp session and its local data stay on our own server in Casablanca. The application database is in Supabase’s Paris region. Data is encrypted in transit; there is no end-to-end encryption of message content."
         },
         "never": {
           "heading": "What we never do",
-          "body": "We do not sell your data, we do not train models on your messages, and we do not hand your session to another account. Media and backups are stored encrypted."
+          "body": "We do not sell your data, we do not train models on your messages, and we do not hand your session to another account. Media lives in a private object store and is only reachable through short-lived signed links; message content is not end-to-end encrypted."
         },
         "choices": {
           "heading": "Your choices",

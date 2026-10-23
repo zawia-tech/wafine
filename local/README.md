@@ -30,7 +30,7 @@ From a dedicated dev worktree (isolated from `main`, see below), the Makefile is
 the entry point:
 
 ```bash
-make dev-up        # creates ../openwa-oci-infra-dev on branch mo/dev-local-env
+make dev-up        # creates .claude/worktrees/dev on branch mo/dev-local-env
 make local-up      # build + start one engine on 127.0.0.1:2785
 make local-probe   # 15 memory samples vs the free-tier verdict
 make local-down    # stop and remove the stack
@@ -70,7 +70,7 @@ contaminate each other. Both are gitignored.
 
 ## Isolated workspace (dedicated worktree)
 
-Local dev runs in **`../openwa-oci-infra-dev`** on branch **`mo/dev-local-env`**,
+Local dev runs in **`.claude/worktrees/dev`** on branch **`mo/dev-local-env`**,
 so builds, `.env.local` and probes never touch the `main` workspace (which other
 sessions use). `scripts/dev-env up|shell|down` manages it; `make dev-up` wraps it.
 `scripts/tf` and `local/` are fully portable across worktrees — the docker stack

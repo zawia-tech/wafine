@@ -8,7 +8,7 @@
 # local docker stack writes to gitignored local/{data,logs,qr}, so dev can apply,
 # build and probe without clobbering main.
 #
-#   scripts/dev-env up            # create ../openwa-oci-infra-dev on mo/dev-local-env
+#   scripts/dev-env up            # create .claude/worktrees/dev on mo/dev-local-env
 #   scripts/dev-env path          # print the worktree path
 #   scripts/dev-env branch        # print the branch name
 #   scripts/dev-env shell         # open an interactive shell inside the worktree
@@ -23,7 +23,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NAME="${DEV_ENV_NAME:-dev-local-env}"
 BRANCH="${DEV_ENV_BRANCH:-mo/$NAME}"
 MAIN="$(dirname "$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir)")"
-DIR="${DEV_ENV_DIR:-$(dirname "$MAIN")/$(basename "$MAIN")-dev}"
+DIR="${DEV_ENV_DIR:-$MAIN/.claude/worktrees/dev}"
 
 say()   { printf '\n\033[36m%s\033[0m\n' "$*"; }
 die()   { echo "dev-env: $*" >&2; exit 1; }

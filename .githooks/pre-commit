@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Refuse commits made directly on main or develop: work goes through a branch and a pull request.
+# Bypass for a one-off maintainer fix: ALLOW_PROTECTED_COMMIT=1 git commit ...
+set -euo pipefail
+. "$(dirname "$0")/_lib.sh"
+
+branch="$(git symbolic-ref --short -q HEAD || true)"
+[ -n "$branch" ] || exit 0 # detached HEAD (rebase, bisect): nothing to protect
+if [[ "$branch" =~ $PROTECTED_RE ]] && [ "${ALLOW_PROTECTED_COMMIT:-0}" != 1 ]; then
+	hook_fail "do not commit on '$branch'. Start a branch: scripts/flow start feature <name> (see docs/git-flow.md)"
+fi

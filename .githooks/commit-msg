@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Conventional commit subjects: type(scope)?: summary. Merge, revert, fixup and squash commits pass.
+set -euo pipefail
+. "$(dirname "$0")/_lib.sh"
+
+subject="$(head -n1 "$1")"
+case "$subject" in
+Merge\ * | Revert\ * | fixup!\ * | squash!\ *) exit 0 ;;
+esac
+types='feat|fix|docs|chore|refactor|test|ci|build|perf|style|revert|scripts|release'
+re="^(${types})(\\([a-z0-9._/-]+\\))?!?: .{3,}"
+if ! [[ "$subject" =~ $re ]]; then
+	hook_fail "commit subject must look like 'type(scope): summary' with type in: ${types//|/, }. Got: $subject"
+fi
+if [ "${#subject}" -gt 100 ]; then
+	hook_fail "commit subject is ${#subject} characters; keep it under 100"
+fi

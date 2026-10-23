@@ -8,6 +8,7 @@ WaFine is an open-core WhatsApp gateway built on OpenWA. This repo holds the BFF
 - Before a PR: `make check`; in `app/bff`: `bun run typecheck && bun run lint && bun run test`; in `app/web`: `bun run typecheck && bun run test`.
 
 ## Rules
+- Branch with `scripts/flow start feature|fix|support <slug>` from `develop` and open the PR into `develop`; never commit on `main` or `develop`. Run `make hooks` once (`docs/git-flow.md`). Commit subjects are `type(scope): summary`.
 - Never edit `OpenWA/`. Configure the engine through `stack/`. Upstream compose forwards an explicit list of env vars: check `OpenWA/docker-compose.yml` before adding one to `stack/.env.example`.
 - OpenWA is not `open-wa/wa-automate`. Port 2785, header `X-API-Key`, events such as `message.received`. Read `OpenWA/README.md` and `OpenWA/docs/` instead of guessing.
 - No secrets in git, issues, PRs or logs: `stack/.env`, `*.tfvars`, API keys, tokens, passwords, QR codes, WhatsApp session data.

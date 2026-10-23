@@ -1,6 +1,7 @@
 name: Bug report
 description: Report a reproducible bug
 labels: ["bug"]
+assignees: ["moughamir"]
 body:
   - type: dropdown
     id: area

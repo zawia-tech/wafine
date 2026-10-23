@@ -160,13 +160,18 @@ describe('sign-up allowlist', () => {
     expect(identity.users.size).toBe(0);
   });
 
-  it('throttles repeated unauthenticated attempts per client IP', async () => {
+  it('throttles repeated unauthenticated attempts per trusted client IP', async () => {
     build({ limit: 2, windowSeconds: 60 });
-    const call = () =>
-      app.request('/auth/login', json({ email: 'x@example.com', password: 'nope' }, { 'cf-connecting-ip': '1.2.3.4' }));
-    expect((await call()).status).toBe(401);
-    expect((await call()).status).toBe(401);
-    expect((await call()).status).toBe(429);
+    // Default TRUSTED_PROXY_HOPS=1: the BFF's direct peer (e.g. the Funnel) appended the
+    // rightmost entry, so that entry is the client IP; anything to its left is spoofable.
+    const call = (xff: string) =>
+      app.request('/auth/login', json({ email: 'x@example.com', password: 'nope' }, { 'x-forwarded-for': xff }));
+    expect((await call('1.2.3.4')).status).toBe(401);
+    expect((await call('1.2.3.4')).status).toBe(401);
+    // Padding the chain with fake left entries does not escape the real client's bucket.
+    expect((await call('9.9.9.9, 2.2.2.2, 1.2.3.4')).status).toBe(429);
+    // A genuinely different client stays unthrottled.
+    expect((await call('5.5.5.5')).status).toBe(401);
   });
 });
 
@@ -221,7 +226,7 @@ describe('auth error codes', () => {
   it('tags the per-IP auth throttle with rate_limited', async () => {
     build({ limit: 1, windowSeconds: 60 });
     const call = () =>
-      app.request('/auth/login', json({ email: 'x@example.com', password: 'nope' }, { 'cf-connecting-ip': '1.2.3.4' }));
+      app.request('/auth/login', json({ email: 'x@example.com', password: 'nope' }, { 'x-forwarded-for': '1.2.3.4' }));
     await call();
     expect(await codeOf(await call())).toEqual({ status: 429, code: 'rate_limited' });
   });
@@ -667,12 +672,13 @@ describe('public waitlist', () => {
     expect(waitlist.all()).toHaveLength(0);
   });
 
-  it('throttles repeated submissions per client IP', async () => {
+  it('throttles repeated submissions per trusted client IP', async () => {
     build(undefined, { limit: 2, windowSeconds: 60 });
-    const call = () => post({ email: 'a@example.com' }, { 'cf-connecting-ip': '9.9.9.9' });
-    expect((await call()).status).toBe(201);
-    expect((await call()).status).toBe(201);
-    expect((await call()).status).toBe(429);
+    const call = (ip: string) =>
+      app.request('/waitlist', json({ email: 'a@example.com' }, { 'x-forwarded-for': ip }));
+    expect((await call('9.9.9.9')).status).toBe(201);
+    expect((await call('9.9.9.9')).status).toBe(201);
+    expect((await call('9.9.9.9')).status).toBe(429);
   });
 
   it('is not mounted when no storage is wired', async () => {

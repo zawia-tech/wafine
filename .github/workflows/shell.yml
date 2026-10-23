@@ -5,14 +5,14 @@ name: shell
 # injection surface.
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
       # Call the repo's own script rather than re-implementing the check here.
       # One implementation means CI and a developer workstation cannot disagree.
@@ -29,7 +29,7 @@ jobs:
   graft:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest

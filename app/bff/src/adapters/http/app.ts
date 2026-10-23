@@ -6,6 +6,9 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { CodedHTTPException } from './errors.js';
+// Client IP for rate limiting, shared with routes/oauth.ts: trusts only the rightmost
+// TRUSTED_PROXY_HOPS x-forwarded-for entries (see ./client-ip.ts for the trust model).
+import { clientIp } from './client-ip.js';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
 import { createAuthMiddleware } from '../../infrastructure/auth/middleware.js';
@@ -96,15 +99,6 @@ export interface AppDeps {
   selfService?: ISelfServiceIdentity;
   /** Web origin for links in auth e-mails. Defaults to WEB_URL. */
   webUrl?: string;
-}
-
-function clientIp(c: { req: { header(name: string): string | undefined } }): string {
-  // Traffic arrives through the Cloudflare tunnel; the BFF is not otherwise reachable.
-  return (
-    c.req.header('cf-connecting-ip') ??
-    c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'unknown'
-  );
 }
 
 export function createApp(deps: AppDeps) {

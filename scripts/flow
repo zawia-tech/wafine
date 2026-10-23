@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Git-flow helper. Branches are created locally from the right base; merging is done by pull request.
+#
+#   scripts/flow start feature|fix|support <slug>   from develop        -> PR into develop
+#   scripts/flow start release <x.y.z>              from develop        -> PR into main, then tag + back-merge
+#   scripts/flow start hotfix <slug>                from main           -> PR into main, then back-merge into develop
+#   scripts/flow status                             current branch, its base and the hooks state
+#   scripts/flow hooks                              enable the repo hooks (.githooks) for this clone
+set -euo pipefail
+
+die() { printf 'flow: %s\n' "$*" >&2; exit 1; }
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+
+cmd="${1:-status}"
+case "$cmd" in
+hooks)
+	git config core.hooksPath .githooks
+	echo "hooks enabled: core.hooksPath=.githooks"
+	;;
+status)
+	branch="$(git symbolic-ref --short -q HEAD || echo '(detached)')"
+	case "$branch" in
+	feature/* | fix/* | support/*) base=develop ;;
+	release/* | hotfix/*) base=main ;;
+	main) base="(protected, moves by PR from release/ or hotfix/)" ;;
+	develop) base="(protected, moves by PR from feature/, fix/, support/; release/ branches off it)" ;;
+	*) base="(not a flow branch)" ;;
+	esac
+	echo "branch: $branch"
+	echo "PR base: $base"
+	echo "hooks: $(git config core.hooksPath || echo 'NOT enabled, run scripts/flow hooks')"
+	;;
+start)
+	kind="${2:-}"
+	slug="${3:-}"
+	[ -n "$kind" ] && [ -n "$slug" ] || die "usage: scripts/flow start feature|fix|support|release|hotfix <name>"
+	case "$kind" in
+	feature | fix | support) base=develop ;;
+	release)
+		base=develop
+		[[ "$slug" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9.]+)?$ ]] || die "release name must be a version like 0.2.0 or 0.2.0-alpha"
+		;;
+	hotfix) base=main ;;
+	*) die "unknown kind '$kind'" ;;
+	esac
+	[[ "$slug" =~ ^[a-z0-9][a-z0-9._-]*$ ]] || die "name must be lowercase letters, digits, dots, dashes"
+	[ -z "$(git status --porcelain --untracked-files=no)" ] || die "uncommitted changes; commit or stash first"
+	git fetch origin "$base" || die "cannot fetch origin/$base (does the branch exist? see docs/git-flow.md)"
+	git switch -c "$kind/$slug" --no-track "origin/$base"
+	echo "on $kind/$slug (from origin/$base). Open the PR against '$([ "$kind" = release ] || [ "$kind" = hotfix ] && echo main || echo develop)'."
+	;;
+*) die "usage: scripts/flow start|status|hooks" ;;
+esac

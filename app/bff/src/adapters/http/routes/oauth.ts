@@ -25,6 +25,9 @@ import type {
 import type { SecretBox } from '../../../infrastructure/crypto/secret-box.js';
 import { TokenBucketRateLimiter } from '../../../infrastructure/auth/rate-limit.js';
 import { sha256Hex } from './wa.js';
+// Shared with app.ts: trusts only the rightmost TRUSTED_PROXY_HOPS x-forwarded-for
+// entries (see ../client-ip.ts for the trust model); never the leftmost entry.
+import { clientIp } from '../client-ip.js';
 
 export const ACCESS_TTL_SECONDS = 3600;
 export const REFRESH_TTL_SECONDS = 30 * 24 * 3600;
@@ -140,10 +143,6 @@ function normaliseScope(raw: string | undefined): string | null {
   return [...new Set(parts)].join(' ');
 }
 
-function clientIp(c: Context) {
-  return c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-}
-
 function oauthError(c: Context, status: 400 | 401, error: string, description?: string) {
   c.header('Cache-Control', 'no-store');
   return c.json({ error, ...(description ? { error_description: description } : {}) }, status);
@@ -175,7 +174,9 @@ export function registerOAuthPublic(app: Hono, deps: OAuthDeps, flows = new Flow
   const resourceMetadata = {
     resource: canonicalResource(issuer),
     authorization_servers: [issuer],
-    scopes_supported: ['whatsapp'],
+    // Must equal the authorization-server list below (RFC 9728
+    // scopes_supported describes the same scopes the AS grants).
+    scopes_supported: [...SCOPES],
     bearer_methods_supported: ['header'],
     resource_name: 'WhatsApp (WAFINE)',
   };
@@ -355,12 +356,23 @@ export function registerOAuthPublic(app: Hono, deps: OAuthDeps, flows = new Flow
   });
 
   // ── RFC 7009 revocation: revoking any token ends the whole connection ──
+  // Per RFC 7009 a public client revokes by sending the token value it owns (§2.1): no
+  // user session is required, and the endpoint answers 200 whether or not the token
+  // existed so probing for valid tokens reveals nothing. `token` is REQUIRED (§2.1),
+  // so a request without it is a 400 malformed request — that check leaks nothing.
+  // An optional `client_id` must match the token's client, still without an oracle.
+  // Revoking the whole
+  // grant (not just one token row) also drops the connector's engine key: possession
+  // of ANY token of the connection is enough to end all of it.
   app.post('/oauth/revoke', async (c) => {
+    if (await limited(c, 'oauth-revoke', 20)) return c.json({ error: 'rate_limited' }, 429);
     const p = await readParams(c);
-    const t = p['token'] ? await deps.oauth.findToken(sha256Hex(p['token'])) : null;
+    if (!p['token']) return oauthError(c, 400, 'invalid_request', 'token parameter required');
+    const t = await deps.oauth.findToken(sha256Hex(p['token']));
     if (t && (!p['client_id'] || p['client_id'] === t.clientId)) {
       await revokeAtEngine(await deps.oauth.revokeGrant(t.grantId));
     }
+    c.header('Cache-Control', 'no-store');
     return c.body(null, 200);
   });
 

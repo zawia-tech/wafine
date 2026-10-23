@@ -38,6 +38,9 @@ fmt-check: ## Verify terraform/ formatting
 fmt: ## Rewrite terraform/ formatting
 	tofu fmt -recursive terraform/
 
+hooks: ## Enable the git-flow hooks (.githooks) for this clone, see docs/git-flow.md
+	scripts/flow hooks
+
 bootstrap: ## Install the operator toolchain (tofu, oci, cloudflared, supabase, uvx)
 	scripts/bootstrap.sh
 
@@ -69,7 +72,7 @@ sidecar-status: ## Sidecar state + tailnet
 	scripts/tailnet-sidecar status
 
 # ── dev worktree (isolated workspace, scripts/dev-env) ────────────────────────
-dev-up: ## Create ../openwa-oci-infra-dev on mo/dev-local-env (idempotent)
+dev-up: ## Create .claude/worktrees/dev on mo/dev-local-env (idempotent)
 	scripts/dev-env up
 
 dev-down: ## Remove the dev worktree (branch kept)
