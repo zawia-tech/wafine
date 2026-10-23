@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
       # Targets come from repository variables; unset ones are skipped, never failed.
       - name: Probe targets
@@ -57,7 +57,7 @@ jobs:
       run:
         working-directory: app/web
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -116,7 +116,7 @@ jobs:
 
       - name: Upload the Playwright report
         if: ${{ !cancelled() && steps.journey.outcome != 'skipped' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report-nightly
           path: app/web/playwright-report/

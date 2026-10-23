@@ -11,7 +11,7 @@ Team:
 | Report something broken | New issue → **Incident / bug** (redact logs) |
 | Ask a question or need a decision | New issue → **Question / decision** |
 | Propose or take on work | New issue → **Task / handoff**, then a PR |
-| Change code, docs or IaC | Branch `mo/<topic>` → PR to `main` → Youssef merges |
+| Change code, docs or IaC | `scripts/flow start feature\|fix\|support <slug>` → PR into `develop` → Youssef merges. Releases go `develop` → `release/x.y.z` → `main`. See `docs/git-flow.md` |
 
 Labels:
 - types: `task`, `bug`, `question`;
@@ -28,6 +28,7 @@ Claude polls this repo about every 20 minutes while Youssef's Claude desktop app
 To get its attention fast, open the issue with a clear title; a mention isn't needed. If it's urgent and blocking, add the `blocked` label.
 
 ## Rules
+- Run `make hooks` once per clone: no direct commits or pushes on `main`/`develop`, conventional commit subjects, flow branch names.
 - **Never paste or commit secrets** in issues, PRs or files. That covers `.env`, `*.tfvars`, API or auth keys, tokens, passwords, QR codes and WhatsApp session data.
   - Secrets live in `stack/.env` on the VM only, and in `terraform/*/terraform.tfvars` on the operator's machine (git-ignored).
 - **Don't edit `OpenWA/`**. It's the upstream submodule pinned to `v0.24.0`. Configure it through `stack/`.

@@ -1,6 +1,7 @@
 name: Task / handoff
 description: A piece of work for the launch or follow-ups
 labels: ["task"]
+assignees: ["moughamir"]
 body:
   - type: textarea
     id: what

@@ -209,6 +209,9 @@ describe('discovery (what Claude reads first)', () => {
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
     });
+    // scoping parity: the resource must advertise exactly what the AS can grant
+    expect(prm['scopes_supported']).toEqual(as['scopes_supported']);
+    expect(prm['scopes_supported']).toEqual(['whatsapp', 'offline_access']);
   });
 });
 
@@ -339,6 +342,53 @@ describe('refresh rotation, reuse detection, revocation', () => {
     expect((await app.request('/api/wa/session', { method: 'DELETE', headers: user })).status).toBe(204);
     expect([...gateway.keys.values()].every((k) => k.revoked)).toBe(true);
     expect((await mcp(again.tokens['access_token']!)).status).toBe(401);
+  });
+
+  it('revoke requires the token parameter and leaks nothing for unknown tokens (no oracle)', async () => {
+    const { tokens } = await connected();
+    // missing token param: malformed request per RFC 7009 §2.1
+    const missing = await app.request('/oauth/revoke', form({}));
+    expect(missing.status).toBe(400);
+    expect(((await missing.json()) as Record<string, string>)['error']).toBe('invalid_request');
+    // unknown token: 200 + nothing revoked (connection still alive)
+    const unknown = await app.request('/oauth/revoke', form({ token: 'not-a-real-token' }));
+    expect(unknown.status).toBe(200);
+    expect((await mcp(tokens['access_token']!)).status).toBe(200);
+    expect([...gateway.keys.values()].every((k) => !k.revoked)).toBe(true);
+    // empty token string counts as missing
+    expect((await app.request('/oauth/revoke', form({ token: '' }))).status).toBe(400);
+  });
+
+  it('revoking with the refresh token ends the whole connection: tokens and engine key', async () => {
+    const { tokens } = await connected();
+    const res = await app.request('/oauth/revoke', form({ token: tokens['refresh_token']! }));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    // access token of the same grant dies, engine key is revoked, MCP is unusable
+    expect((await mcp(tokens['access_token']!)).status).toBe(401);
+    expect([...gateway.keys.values()].every((k) => k.revoked)).toBe(true);
+  });
+
+  it('mismatched client_id still revokes via token possession; unknown client with valid token is a no-op', async () => {
+    const { tokens } = await connected();
+    expect((await app.request('/oauth/revoke', form({ token: tokens['access_token']!, client_id: 'owa_c_other' }))).status).toBe(200);
+    // wrong client_id: no action, connection still alive
+    expect((await mcp(tokens['access_token']!)).status).toBe(200);
+    // matching client_id: whole connection ends
+    const { clientId, tokens: t2 } = await connected();
+    expect((await app.request('/oauth/revoke', form({ token: t2['access_token']!, client_id: clientId }))).status).toBe(200);
+    expect((await mcp(t2['access_token']!)).status).toBe(401);
+  });
+
+  it('revoke is rate-limited (20/min)', async () => {
+    const codes = Array.from({ length: 21 }, () => 'nope');
+    const statuses: number[] = [];
+    for (const token of codes) {
+      const res = await app.request('/oauth/revoke', form({ token }));
+      statuses.push(res.status);
+    }
+    expect(statuses.slice(0, 20).every((s) => s === 200)).toBe(true);
+    expect(statuses[20]).toBe(429);
   });
 
   it('rejects unknown grant types and clients', async () => {

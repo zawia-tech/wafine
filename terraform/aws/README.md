@@ -61,8 +61,8 @@ it). Recommended flow — from the dev worktree so staging state never coexists
 with the OCI production workspace:
 
 ```bash
-make dev-up        # ../openwa-oci-infra-dev on mo/dev-local-env (scripts/dev-env)
-cd ../openwa-oci-infra-dev
+make dev-up        # .claude/worktrees/dev on mo/dev-local-env (scripts/dev-env)
+cd .claude/worktrees/dev
 cp terraform/aws/terraform.tfvars.example terraform/aws/terraform.tfvars
                    # set region + budget_alert_emails (see below)
 aws login          # REQUIRED — no ambient credentials

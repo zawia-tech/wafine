@@ -1,6 +1,7 @@
 name: Incident / bug
 description: Something is broken or behaving unexpectedly (VM, OpenWA, Supabase, Tailscale, Cloudflare)
 labels: ["bug"]
+assignees: ["moughamir"]
 body:
   - type: dropdown
     id: area
