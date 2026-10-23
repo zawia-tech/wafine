@@ -1,6 +1,6 @@
 {
-  "$comment": "Single source of truth for the issue/PR hygiene triage. Repo-agnostic on purpose: repo slugs are passed via --repo, never stored here, so older public snapshots of this file cannot leak the private dev repo's name. See docs/issue-hygiene-rules.md.",
-  "version": 1,
+  "$comment": "Single source of truth for the issue/PR hygiene triage. Repo-agnostic on purpose: repo slugs are passed via --repo, never stored here (leaking the private dev repo's name through a repo file would be bad). See docs/issue-hygiene-rules.md.",
+  "version": 2,
   "stale_days": {
     "default": 60,
     "overrides": []
@@ -9,7 +9,7 @@
   "labels": {
     "status:needs-triage": {
       "color": "ededed",
-      "description": "No area/priority labels derived yet — owner review"
+      "description": "No area/priority labels derived yet \u2014 owner review"
     },
     "status:launch-blocking": {
       "color": "b60205",
@@ -17,49 +17,477 @@
     }
   },
   "wf_map": {
-    "WF-001": { "milestone": "M0", "area": "area:security", "priority": "P0", "type": "type:security" },
-    "WF-002": { "milestone": "M0", "area": "area:security", "priority": "P0", "type": "type:security" },
-    "WF-003": { "milestone": "M0", "area": "area:docs", "priority": "P0", "type": "type:task" },
-    "WF-004": { "milestone": "M0", "area": "area:security", "priority": "P0", "type": "type:security" },
-    "WF-005": { "milestone": "M0", "area": "area:security", "priority": "P1", "type": "type:security" },
-    "WF-006": { "milestone": "M0", "area": "area:security", "priority": "P1", "type": "type:security" },
-    "WF-007": { "milestone": "M0", "area": "area:web", "priority": "P1", "type": "type:task" },
-    "WF-008": { "milestone": "M0", "area": "area:web", "priority": "P1", "type": "type:task" },
-    "WF-009": { "milestone": "M0", "area": "area:ops", "priority": "P1", "type": "type:task" },
-    "WF-010": { "milestone": "M0", "area": "area:ops", "priority": "P1", "type": "type:task" },
-    "WF-011": { "milestone": "M0", "area": "area:ops", "priority": "P1", "type": "type:task" },
-    "WF-012": { "milestone": "M0", "area": "area:ops", "priority": "P1", "type": "type:task" }
+    "WF-001": {
+      "milestone": "M0",
+      "area": "area:security",
+      "priority": "P0",
+      "type": "type:security"
+    },
+    "WF-002": {
+      "milestone": "M0",
+      "area": "area:security",
+      "priority": "P0",
+      "type": "type:security"
+    },
+    "WF-003": {
+      "milestone": "M0",
+      "area": "area:docs",
+      "priority": "P0",
+      "type": "type:task"
+    },
+    "WF-004": {
+      "milestone": "M0",
+      "area": "area:security",
+      "priority": "P0",
+      "type": "type:security"
+    },
+    "WF-005": {
+      "milestone": "M0",
+      "area": "area:security",
+      "priority": "P1",
+      "type": "type:security"
+    },
+    "WF-006": {
+      "milestone": "M0",
+      "area": "area:security",
+      "priority": "P1",
+      "type": "type:security"
+    },
+    "WF-007": {
+      "milestone": "M0",
+      "area": "area:web",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-008": {
+      "milestone": "M0",
+      "area": "area:web",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-009": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-010": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-011": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-012": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-013": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-014": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-015": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P0",
+      "type": "type:task"
+    },
+    "WF-016": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-017": {
+      "milestone": "M1",
+      "area": "area:infra",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-018": {
+      "milestone": "M2",
+      "area": "area:security",
+      "priority": "P1",
+      "type": "type:security"
+    },
+    "WF-019": {
+      "milestone": "M2",
+      "area": "area:security",
+      "priority": "P1",
+      "type": "type:security"
+    },
+    "WF-020": {
+      "milestone": "M2",
+      "area": "area:security",
+      "priority": "P1",
+      "type": "type:security"
+    },
+    "WF-021": {
+      "milestone": "M2",
+      "area": "area:bff",
+      "priority": "P1",
+      "type": "type:task"
+    },
+    "WF-022": {
+      "milestone": "M2",
+      "area": "area:web",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-023": {
+      "milestone": "M2",
+      "area": "area:web",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-024": {
+      "milestone": "M2",
+      "area": "area:web",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-025": {
+      "milestone": "M2",
+      "area": "area:web",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-026": {
+      "milestone": "M2",
+      "area": "area:security",
+      "priority": "P2",
+      "type": "type:security"
+    },
+    "WF-027": {
+      "milestone": "M2",
+      "area": "area:security",
+      "priority": "P2",
+      "type": "type:security"
+    },
+    "WF-028": {
+      "milestone": "M2",
+      "area": "area:brand",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-029": {
+      "milestone": "M2",
+      "area": "area:docs",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-030": {
+      "milestone": "M3",
+      "area": "area:infra",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-031": {
+      "milestone": "M3",
+      "area": "area:infra",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-032": {
+      "milestone": "M3",
+      "area": "area:ops",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-033": {
+      "milestone": "M4",
+      "area": "area:brand",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-034": {
+      "milestone": "M5",
+      "area": "area:growth",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-035": {
+      "milestone": "M6",
+      "area": "area:brand",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-036": {
+      "milestone": "M7",
+      "area": "area:growth",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-037": {
+      "milestone": "M8",
+      "area": "area:growth",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-038": {
+      "milestone": "M2",
+      "area": "area:docs",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-039": {
+      "milestone": "M2",
+      "area": "area:infra",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-040": {
+      "milestone": "M9",
+      "area": "area:growth",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-041": {
+      "milestone": "M10",
+      "area": "area:legal",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-042": {
+      "milestone": "M11",
+      "area": "area:growth",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-043": {
+      "milestone": "M12",
+      "area": "area:growth",
+      "priority": "P2",
+      "type": "type:task"
+    },
+    "WF-044": {
+      "milestone": "M12",
+      "area": "area:product",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-045": {
+      "milestone": "M12",
+      "area": "area:product",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-046": {
+      "milestone": "M12",
+      "area": "area:product",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-047": {
+      "milestone": "M12",
+      "area": "area:security",
+      "priority": "P3",
+      "type": "type:security"
+    },
+    "WF-048": {
+      "milestone": "M12",
+      "area": "area:product",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-049": {
+      "milestone": "M12",
+      "area": "area:product",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-050": {
+      "milestone": "M12",
+      "area": "area:product",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-051": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-052": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-053": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-054": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-055": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-056": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P3",
+      "type": "type:task"
+    },
+    "WF-057": {
+      "milestone": "M0",
+      "area": "area:ops",
+      "priority": "P3",
+      "type": "type:task"
+    }
   },
   "milestones": [
-    { "title": "M9", "due": "2026-11-30" },
-    { "title": "M10", "due": "2026-12-15" },
-    { "title": "M11", "due": "2026-12-20" }
+    {
+      "title": "M9",
+      "due": "2026-11-30"
+    },
+    {
+      "title": "M10",
+      "due": "2026-12-15"
+    },
+    {
+      "title": "M11",
+      "due": "2026-12-20"
+    }
   ],
   "issue_rules": [
-    { "match": "^M\\d+ .", "labels": ["type:task"] },
-    { "match": "\\b(rate.?limit|trigram|xss|crlf|rls|secret|cve|auth.?by.?pas|revocation|security hardening)\\b", "labels": ["area:security"] },
-    { "match": "\\b(security)\\b", "labels": ["type:security"] },
-    { "match": "\\b(changelog|readme|i18n|rtl|translat|arabic|french|docs?)\\b", "labels": ["area:docs"] },
-    { "match": "\\b(landing|hero|stub pages|a11y|boundary|next\\.?js|og image)\\b", "labels": ["area:web"] },
-    { "match": "\\b(oauth|bff|gateway proxy|presign|inbox endpoints|rate)\\b", "labels": ["area:bff"] },
-    { "match": "\\b(r2|media|backup|tunnel|terraform|tofu|oci\\b|dns|vps|nginx|caddy)\\b", "labels": ["area:infra"] },
-    { "match": "\\b(dependabot|actions|checkout|upload-artifact|ci\\b|workflow|billing)\\b", "labels": ["area:ops"] },
-    { "match": "\\b(logo|brand pack|design system|svg|banner)\\b", "labels": ["area:brand"] },
-    { "match": "\\b(invite|waitlist|pricing|beta)\\b", "labels": ["area:growth"] },
-    { "match": "\\b(bug|broken|error|regression|fails?|cannot|can't)\\b", "labels": ["type:bug"] },
-    { "match": "\\b(cve|secret leak|auth bypass|rce\\b|sql injection)\\b", "labels": ["P0"] },
-    { "match": "\\b(security|hardening)\\b", "labels": ["P1"] }
+    {
+      "match": "\\b(rate.?limit|trigram|xss|crlf|rls|secret|cve|auth.?by.?pas|revocation|security hardening)\\b",
+      "labels": [
+        "area:security"
+      ]
+    },
+    {
+      "match": "\\b(security)\\b",
+      "labels": [
+        "type:security"
+      ]
+    },
+    {
+      "match": "\\b(changelog|readme|i18n|rtl|translat|arabic|french|docs?)\\b",
+      "labels": [
+        "area:docs"
+      ]
+    },
+    {
+      "match": "\\b(landing|hero|stub pages|a11y|boundary|next\\.?js|og image)\\b",
+      "labels": [
+        "area:web"
+      ]
+    },
+    {
+      "match": "\\b(oauth|bff|gateway proxy|presign|revocation)\\b",
+      "labels": [
+        "area:bff"
+      ]
+    },
+    {
+      "match": "\\b(r2|media|backup|tunnel|terraform|tofu|oci\\b|dns|vps|nginx|caddy)\\b",
+      "labels": [
+        "area:infra"
+      ]
+    },
+    {
+      "match": "\\b(dependabot|actions|checkout|upload-artifact|ci\\b|workflow|billing)\\b",
+      "labels": [
+        "area:ops"
+      ]
+    },
+    {
+      "match": "\\b(logo|brand pack|design system|svg|banner)\\b",
+      "labels": [
+        "area:brand"
+      ]
+    },
+    {
+      "match": "\\b(invite|waitlist|pricing|beta)\\b",
+      "labels": [
+        "area:growth"
+      ]
+    },
+    {
+      "match": "\\b(bug|broken|error|regression|fails?|cannot|can't)\\b",
+      "labels": [
+        "type:bug"
+      ]
+    },
+    {
+      "match": "\\b(cve|secret leak|auth bypass|rce\\b|sql injection)\\b",
+      "labels": [
+        "P0"
+      ]
+    },
+    {
+      "match": "\\b(security|hardening)\\b",
+      "labels": [
+        "P1"
+      ]
+    }
   ],
   "pr_path_rules": [
-    { "path": "terraform/", "label": "area:infra" },
-    { "path": "stack/", "label": "area:infra" },
-    { "path": "dns/", "label": "area:infra" },
-    { "path": "app/web/", "label": "area:web" },
-    { "path": "app/bff/", "label": "area:bff" },
-    { "path": "app/docs/", "label": "area:docs" },
-    { "path": "docs/", "label": "area:docs" },
-    { "path": "scripts/", "label": "area:ops" },
-    { "path": ".github/", "label": "area:ops" },
-    { "path": "CHANGELOG.md", "label": "area:ops" }
+    {
+      "path": "terraform/",
+      "label": "area:infra"
+    },
+    {
+      "path": "stack/",
+      "label": "area:infra"
+    },
+    {
+      "path": "dns/",
+      "label": "area:infra"
+    },
+    {
+      "path": "app/web/",
+      "label": "area:web"
+    },
+    {
+      "path": "app/bff/",
+      "label": "area:bff"
+    },
+    {
+      "path": "app/docs/",
+      "label": "area:docs"
+    },
+    {
+      "path": "docs/",
+      "label": "area:docs"
+    },
+    {
+      "path": "scripts/",
+      "label": "area:ops"
+    },
+    {
+      "path": ".github/",
+      "label": "area:ops"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "label": "area:ops"
+    }
   ]
 }

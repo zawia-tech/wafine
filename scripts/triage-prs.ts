@@ -100,8 +100,9 @@ for (const repo of repos) {
     for (const label of derived) {
       if (existing.has(label)) continue;
       plan.push(`${repo}#${pr.number} ${dry ? "would label" : "labels"} ${label} (paths)`);
-      if (apply) {
-        await ghApi(["repos/" + repo + "/pulls/" + pr.number + "/labels", "-f", `labels[]=${label}`], false, "POST");
+      if (apply && !dry) {
+        // Labels live on the issue-backed view of the PR; the /pulls/labels route 404s.
+        await ghApi(["repos/" + repo + "/issues/" + pr.number + "/labels", "-f", `labels[]=${label}`], false, "POST");
       }
     }
 
