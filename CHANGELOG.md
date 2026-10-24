@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.4-alpha] - 2026-10-24
+
+### Added
+- **Issue hygiene automation** (PR #42, #43): nightly triage scripts for issues and PRs, auto-labeling with area/priority/type, stale-issue detection (180d), milestone assignment.
+- **Issue transfer**: 17 WF-023 through WF-050 issues migrated from `ai4xedu/openwa-oci-infra`.
+- **WaFine-only issue/PR hygiene**: now runs exclusively on `zawia-tech/wafine`.
+
+### Changed
+- **Repository transition**: `zawia-tech/wafine` is now the single canonical repo; `ai4xedu/openwa-oci-infra` to be archived.
+- **Branch protection**: both `main` and `develop` protected (strict CI + 1 review).
+- **Default branch**: `develop` (from `claude/brave-hypatia-wvxmq0`).
+
+### Release
+- Synced from `openwa-oci-infra` main `52942c8` (PR #44).
+- Exporter deny-list verified: operator-only files (CLAUDE.md, TASKS.md, docs/03-runbook.md) correctly excluded.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
